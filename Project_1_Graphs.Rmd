@@ -1,0 +1,330 @@
+---
+title: "Project_1_Main"
+author: "Michael Arango, Yeshwant Chillakuru, Jackson Crum"
+date: "February 22, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tidyverse)
+library(tidyr)
+
+# date format library
+library(lubridate)
+
+# geolibraries
+library(rgdal)
+library(sp)
+library(raster)
+```
+
+#Description of the Dataset
+
+##Reading the Data into R
+```{r Reading in Data, tidy=TRUE, results='hide'}
+getwd()
+tickets <- data.frame(read.csv('Muni_Driver_Reported_Transit_Only_Lane_Violations.csv', header = T, sep = ","))
+```
+
+##Checking Dimensions and Structure of the Dataset 
+```{r Variables, tidy=T, results='hide'}
+#Check dimensions of dataset 
+dim(tickets)
+#Check variable names
+colnames(tickets)
+#Examine structure of the data
+str(tickets)
+```
+
+##Summary of the Dataset 
+
+The dataset consists of San Francisco Municipal Transportation Agency (SFMTA) driver reported transit only lane violations from March 2008 to February 2015. The dataset contains 17,178 observations and 18 variables. The data were obtained from the US government's open data site at https://catalog.data.gov/dataset/muni-driver-reported-transit-only-lane-violations. 
+
+###Description of Variables in the dataset: 
+
+* `Object.ID` -- Unique key that corresponds to each observation
+* `Ticket.Number` -- Unique number that corresponds to each ticket catalogued with the Superior Court of San Francisco
+* `Citation.Issue.Date` -- The date (MM/DD/YY) that the traffic only lane violation citation was issued
+* `Citation.Issue.Month` -- The month (MM) that the traffic only lane violation citation was issued; This column was completely blank when downloaded
+* `Citation.Issue.Time` -- The time of day (HH:MM) PST that the traffic only lane violation citation was issued
+* `Location` -- The street address where the traffic only lane violation citation was issued
+* `Violation.Code` -- A code that corresponds to the type of traffic only lane violation that was committed to warrant issuing a citation
+* `Violation` -- Description of the traffic only lane violation issued in the citation
+* `Fine.Amount` -- The dollar amount of to be paid for the traffic only lane violation
+* `Citation.Status` -- Status of the citation (Open, Closed, Unapplied)
+* `Amount.Paid` -- The dollar amount paid for the traffic only lane violation
+* `Amount.Due` -- Outstanding balance for the traffic only lane violation 
+* `Suspend.Code` -- Code that represents reason for license suspension (Suspended until the driver goes to driving school, pays fine, too many points on license, etc.)
+* `Suspend.Process.Date` -- Date the license suspension goes into effect
+* `Suspend.Until.Date` -- Date the license suspension is over
+* `Disposition.Code` -- The city of San Francisco does not release disposition codes
+* `Last.Edited.Date` -- Date that represents the last date the corresponding observation was edited; This column was completely blank when downloaded
+* `Geom` -- The latitude and longitude (latitutde, longitude) of the traffic only lane violation 
+
+
+###Explanations of Violation variable:
+ * 'DBL Park' -- Double Parking
+ * 'TWAWY ZN#1' and 'TWAWY ZN#2' -- Towaway Zone 1 and Towaway Zone 2
+ * 'TRNST ONLY' -- Parking Transit-Only
+ * 'PRK PROHIB' -- Tow-Away Zone - Downtown Core
+ * 'PK PHB OTD' -- Tow-Away Zone - Outside Downtown Core
+ * 'PK FR LN' -- Parking in Fire Lane
+ * 'ON SIDEWLK' -- Parking on Sidewalk
+ * 'DBL PARK' -- Double Parking
+ * 'BUS ZONE' -- Parking in Bus Zone
+ * 'OVR 18" C' -- Over 18 inches from Curb
+ 
+ 
+## Formatting Data
+```{r Reformatting Variables, tidy=T, results='hide', message=FALSE}
+# Format Date and Month columns
+#Change citation issue date from string to month/day/year date variable 
+tickets$Citation.Issue.Date <- mdy(tickets$Citation.Issue.Date)
+#Populate blank column for citation issue month with month of citation issue date
+tickets$Citaton.Issue.Month <- NULL
+tickets$Citation.Issue.Month <- month(tickets$Citation.Issue.Date, label = TRUE)
+
+# Convert Amount.Paid from factor to numeric
+tickets$Amount.Paid <- as.numeric(tickets$Amount.Paid)
+```
+
+## Data Cleaning
+```{r Data Cleaning, tidy=T}
+# New Column "Paid.On.Time" (1 = true, 0 = false). Based on assumption that late payments have to pay an extra fine and, thus, Amount.Paid > Fine.Ammount
+tickets$Paid.On.Time <- ifelse(tickets$Amount.Paid > tickets$Amount.Due, 1, 0)
+tickets$Paid.On.Time <- as.factor(tickets$Paid.On.Time)
+
+# Seperate Geom vriable into 2 separate latitude and longitude numeric variables 
+  ## remove parentheses from Geom variable
+tickets$Geom <- substr(tickets$Geom, 2, nchar(as.character(tickets$Geom))-1)
+  ## split string at comma & create new columns
+out <- strsplit(as.character(tickets$Geom), ", ")
+  ##Drop observations with no Geom data. ***21 OBSERVATIONS DROPPED***
+tickets <- tickets[!(is.na(tickets$Geom) | tickets$Geom == ""), ]
+tickets <- data.frame(tickets, do.call(rbind, out))
+rm(out)
+  ## rename columns and set str to numeric
+names(tickets)[names(tickets) == "X1"] <- "Latitude"
+names(tickets)[names(tickets) == "X2"] <- "Longitude"
+tickets$Latitude <- as.numeric(as.character(tickets$Latitude))
+tickets$Longitude <- as.numeric(as.character(tickets$Longitude))
+head(tickets)
+
+# Create column indicating the year the ticket was issued
+tickets$Citation.Issue.Year <- year(tickets$Citation.Issue.Date)
+
+# Create column indicating DayOfWeek (Sunday (1) to Saturday (7)) that the ticket was issued
+tickets$Citation.Issue.DayOfWeek <- wday(tickets$Citation.Issue.Date)
+
+# Convert Citation.Issue.DayOfWeek from 1, 2, 3, 4, 5, 6, 7 to Mon, Tues, Wed, Thurs, Fri, Sat
+tickets$Citation.Issue.DayOfWeek <- wday(tickets$Citation.Issue.Date, label = TRUE)
+
+# Create column indicating whether the ticket was issued on: weekday (1), weekend (0)
+tickets$Citation.Issue.Weekday <- ifelse(tickets$Citation.Issue.DayOfWeek >= 2 & tickets$Citation.Issue.DayOfWeek <= 6, 1, 0)
+
+# Create column for Hour of citation issuance. Drop observations with no Citation.Issue.Time data. ***0 OBSERVATIONS DROPPED***
+tickets <- tickets[!(is.na(tickets$Citation.Issue.Time) | tickets$Citation.Issue.Time == ""), ]
+outTime <- strsplit(as.character(tickets$Citation.Issue.Time), ":")
+tickets <- data.frame(tickets, do.call(rbind, outTime))
+names(tickets)[names(tickets) == "X1"] <- "Citation.Issue.Hour"
+names(tickets)[names(tickets) == "X2"] <- "Citation.Issue.Minute"
+tickets$Citation.Issue.Hour <- as.numeric(as.character(tickets$Citation.Issue.Hour))
+tickets$Citation.Issue.Minute <- NULL
+rm(outTime)
+
+# Create column from Month-Year
+tickets <- within(tickets, Citation.Issue.MonthYear <- paste(Citation.Issue.Month, "-", Citation.Issue.Year, sep=""))
+
+# Drop "Unapplied" and empty/NA observations within Citation.Status. Unapplied result is outside the scope of this project. ***84 OBSERVATIONS DROPPED***
+tickets <- tickets[!(is.na(tickets$Citation.Status) | tickets$Citation.Status =="" | tickets$Citation.Status == "Unapplied"),]
+
+# Drop extraneous variables: Object.ID (just row index), Location (Not need street address b/c we have latitude and longitude), Last.Edited.Date (empty column), Suspend.Code (NA), Disposition.Code (NA), Violation.Code (have this info in Violation variable)
+tickets$Object.ID <- NULL
+tickets$Location <- NULL
+tickets$Last.Edited.Date <- NULL
+tickets$Suspend.Code <- NULL
+tickets$Disposition.Code <- NULL
+tickets$Violation.Code <- NULL
+
+# Drop "NO VIOL" observations in Violation variable. ***1 OBSERVATIONS DROPPED***
+tickets <- tickets[!(tickets$Violation == "NO VIOL"),]
+
+# Create neighborhood column using Lat/Long and Census Block Data from shp file
+## Thanks to Shekeine for instructions: http://stackoverflow.com/questions/29872109/binning-longitude-latitude-labeled-data-by-census-block-id
+## Load Census tract data for San Fransisco
+#tractSF <- shapefile('Analysis Neighborhoods - 2010 census tracts assigned to neighborhoods/geo_export_72577790-b6d5-439f-9b51-edc69b942ac6.shp')
+```
+
+###Dropped Observations
+
+* We dropped all observations with no Geom data
+    * This was only 21 of the 17,178 observations
+* We dropped all observations with no information on the time of the citation
+    * Every observation had information on the time of the citation
+* We dropped all observations where citation status was not specified or "unapplied"
+    * We determined "Unapplied" citations are outside the scope of this project
+    * This only led to 84 observations being dropped
+* Dropping extraneous variables did not affect the number of observations in the dataset
+* We dropped Violations where the listed violation was determined to be "No Violation"
+    * This led to 1 observation being dropped
+    * It is worth noting that only 1 violation was deemed not to be a violation
+
+#Cleaned Dataset
+
+```{r Cleaned Dataset Properties, tidy=T, results='hide', message=FALSE}
+#Check dimensions of cleaned dataset 
+dim(tickets)
+#Check all variable names
+colnames(tickets)
+#Examine structure of cleaned dataset
+str(tickets)
+```
+
+##Description of Cleaned Dataset
+```{r}
+install.packages("ggmap", repos="http://cran.rstudio.com/")
+library(ggmap)
+```
+
+```{r}
+sanfran <- c(lon = -122.42, lat = 37.77)
+sanfran_map <- get_map(location = sanfran, zoom = 13)
+ggmap(sanfran_map) + geom_point(data = tickets, aes(x = Longitude, y = Latitude))
+
+sanfran1 <- c(lon = -122.415, lat = 37.785)
+sanfran1_map <- get_map(location = sanfran1, zoom = 14)
+ggmap(sanfran1_map) + geom_point(data = tickets, aes(x = Longitude, y = Latitude))
+```
+
+
+```{r}
+# Histogram of Citations per Hour
+ByHour <- tickets %>% group_by(Citation.Issue.Hour) %>% summarise(Percentage = n()/nrow(tickets) * 100)
+ByHour
+
+ggplot(tickets, aes(x = Citation.Issue.Hour)) + geom_histogram(binwidth = 1, fill = "red", color = "black")
+```
+
+```{r}
+# Proportion of Violation Type per Hour
+
+Tickets.per.Hour <- tickets %>% group_by(Citation.Issue.Hour) %>% summarise(count = n())
+Tickets.per.Hour
+
+ggplot(tickets, aes(x = Citation.Issue.Hour, fill = Violation)) + geom_bar(position = "fill") + scale_x_continuous(breaks = seq(0, 24, 1)) 
+
+# Graph shows almost entirely Double Parking and Bus Zone Violations during non-rush-hour  and almost entirely Towaway and Prohibited Parking during rush hour
+```
+
+```{r}
+#Distributions of each Violation Type over Course of a Day
+
+ggplot(tickets, aes(x = Citation.Issue.Hour)) + geom_histogram(fill = "red", color = "black") + facet_wrap(~Violation)
+
+```
+
+```{r}
+# These graphs show how Fine Amount changes over each hour, day of the week, month, and year for each Violation Type
+
+ggplot(tickets, aes(x = Citation.Issue.Hour, y = Fine.Amount)) + geom_point() + facet_wrap(~Violation)
+
+ggplot(tickets, aes(x = Citation.Issue.DayOfWeek, y = Fine.Amount)) + geom_point() + facet_wrap(~Violation)
+
+ggplot(tickets, aes(x = Citation.Issue.Month, y = Fine.Amount)) + geom_point() + facet_wrap(~Violation)
+
+ggplot(tickets, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + facet_wrap(~Violation)
+
+# There are appears to be no change over Hour, Day, or Month with a slight increase in prices each year, with a larger spike in 2012. 
+```
+
+```{r}
+#Analysis of price changes over the years by Violation type
+
+#Total of each type of Violation
+ViolationCount <- tickets %>% group_by(Violation) %>% summarise(count = n())
+ViolationCount
+
+#Create objects for each type of Violation
+Violation.DBLPRK <- tickets %>% filter(Violation == "DBL PARK")
+Violation.BUSZONE <- tickets %>% filter(Violation == "BUS ZONE")
+Violation.PKPHBOTD <- tickets %>% filter(Violation == "PK PHB OTD")
+Violation.PRKPROHIB <- tickets %>% filter(Violation == "PRK PROHIB")
+Violation.TOWAWAY1 <- tickets %>% filter(Violation == "TWAWY ZN#1")
+Violation.TOWAWAYzONE <- tickets %>% filter(Violation == "TWAWY ZONE")
+
+#Graphing the change in fine for each Violation type from 2010-2015
+
+ggplot(Violation.DBLPRK, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Double Parking")
+
+ggplot(Violation.BUSZONE, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Bus Zone")
+
+ggplot(Violation.PKPHBOTD, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Tow-Away Zone - Outside Downtown Core")
+
+ggplot(Violation.PRKPROHIB, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Tow-Away Zone - Downtown Core")
+
+ggplot(Violation.TOWAWAY1, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Tow Away Zone 1")
+
+ggplot(Violation.TOWAWAYzONE, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Tow Away Zone 2")
+
+#General increases in fines over the interval with a noticable jump in prices in 2012
+```
+
+
+
+```{r}
+#EDA on Paid.on.Time by Violation Type
+
+#Proportion of fines paid by type of Violation
+PaidOnTime <- tickets %>% group_by(Violation) %>% summarise(Total = n(), PaidProportion = mean(Paid.On.Time))
+PaidOnTime
+mean(tickets$Paid.On.Time)
+
+#Graph of proportion of paid-to-total tickets with violation type as color
+ggplot(tickets, aes(x = Paid.On.Time, fill = Violation)) + geom_histogram(binwidth = 0.5) + scale_x_continuous(breaks = seq(0, 1, 1))
+
+#Proportion of paid-to-total for each Violation type
+ggplot(tickets, aes(x = Paid.On.Time)) + geom_histogram(binwidth = 0.5) + scale_x_continuous(breaks = seq(0, 1, 1)) + facet_wrap(~Violation)
+```
+
+
+
+```{r}
+#EDA on Paid on Time By Hour, Day, Month, Year
+
+#Proportion paid-to-total fines by hour
+Paid.by.Hour <- tickets %>% group_by(Citation.Issue.Hour) %>% summarise(count = n(), Percent_Paid = mean(Paid.On.Time))
+Paid.by.Hour
+
+#Proportion paid-to-total fines by day
+Paid.by.Day <- tickets %>% group_by(Citation.Issue.DayOfWeek) %>% summarise(count = n(), Percent_Paid = mean(Paid.On.Time))
+Paid.by.Day
+
+#Proportion paid-to-total fines by month
+Paid.by.Month <- tickets %>% group_by(Citation.Issue.Month) %>% summarise(count = n(), Percent_Paid = mean(Paid.On.Time))
+Paid.by.Month
+
+#Proportion paid-to-total fines by year
+Paid.by.Year <- tickets %>% group_by(Citation.Issue.Year) %>% summarise(count = n(), Percent_Paid = mean(Paid.On.Time))
+Paid.by.Year
+
+#Associated graphs
+ggplot(tickets, aes(x = Paid.On.Time)) + geom_histogram(binwidth = 0.5) + scale_x_continuous(breaks = seq(0, 1, 1)) + facet_wrap(~Citation.Issue.Hour)
+
+ggplot(tickets, aes(x = Paid.On.Time)) + geom_histogram(binwidth = 0.5) + scale_x_continuous(breaks = seq(0, 1, 1)) + facet_wrap(~Citation.Issue.DayOfWeek)
+
+ggplot(tickets, aes(x = Paid.On.Time)) + geom_histogram(binwidth = 0.5) + scale_x_continuous(breaks = seq(0, 1, 1)) + facet_wrap(~Citation.Issue.Month)
+
+ggplot(tickets, aes(x = Paid.On.Time)) + geom_histogram(binwidth = 0.5) + scale_x_continuous(breaks = seq(0, 1, 1)) + facet_wrap(~Citation.Issue.Year)
+```
+
+```{r}
+install.packages("foreign")
+library(foreign)
+
+```
+```{r}
+SanFranCensus <- readOGR(dsn = "C:/Users/JackCrum/Downloads/", layer = "SanFran.shp")
+
+```
