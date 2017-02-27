@@ -10,10 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(tidyverse)
 library(tidyr)
-
 # date format library
 library(lubridate)
-
 # geolibraries
 library(rgdal)
 library(sp)
@@ -179,6 +177,8 @@ tickets <- tickets[!(tickets$Violation == "NO VIOL"),]
     * This led to 1 observation being dropped
     * It is worth noting that only 1 violation was deemed not to be a violation
 
+Overall, we dropped 106 of the original 17,178 observations in the dataset. This only accounts for `r round((106/17178)*100,2)` percent of the dataset. Thus, we are confident that we did not introduce any inherent biases to the data by dropping the aforementioned observations. 
+
 #Cleaned Dataset
 
 ```{r Cleaned Dataset Properties, tidy=T, results='hide', message=FALSE}
@@ -320,9 +320,4 @@ ggplot(tickets, aes(x = Paid.On.Time)) + geom_histogram(binwidth = 0.5) + scale_
 ggplot(tickets, aes(x = Paid.On.Time)) + geom_histogram(binwidth = 0.5) + scale_x_continuous(breaks = seq(0, 1, 1)) + facet_wrap(~Citation.Issue.Month)
 
 ggplot(tickets, aes(x = Paid.On.Time)) + geom_histogram(binwidth = 0.5) + scale_x_continuous(breaks = seq(0, 1, 1)) + facet_wrap(~Citation.Issue.Year)
-```
-
-```{r}
-SanFranCensus <- readOGR(dsn = "C:/Users/JackCrum/Downloads/", layer = "SanFran.shp")
-
 ```
