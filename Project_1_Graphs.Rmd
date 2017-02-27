@@ -18,6 +18,10 @@ library(lubridate)
 library(rgdal)
 library(sp)
 library(raster)
+
+# mapping/plooting
+library(ggmap)
+library(foreign)
 ```
 
 #Description of the Dataset
@@ -96,7 +100,7 @@ tickets$Amount.Paid <- as.numeric(tickets$Amount.Paid)
 tickets$Paid.On.Time <- ifelse(tickets$Amount.Paid > tickets$Amount.Due, 1, 0)
 tickets$Paid.On.Time <- as.factor(tickets$Paid.On.Time)
 
-# Seperate Geom vriable into 2 separate latitude and longitude numeric variables 
+# Seperate Geom variable into 2 separate latitude and longitude numeric variables 
   ## remove parentheses from Geom variable
 tickets$Geom <- substr(tickets$Geom, 2, nchar(as.character(tickets$Geom))-1)
   ## split string at comma & create new columns
@@ -123,6 +127,7 @@ tickets$Citation.Issue.DayOfWeek <- wday(tickets$Citation.Issue.Date, label = TR
 
 # Create column indicating whether the ticket was issued on: weekday (1), weekend (0)
 tickets$Citation.Issue.Weekday <- ifelse(tickets$Citation.Issue.DayOfWeek >= 2 & tickets$Citation.Issue.DayOfWeek <= 6, 1, 0)
+tickets$Citation.Issue.Weekday <- as.factor(tickets$Citation.Issue.Weekday)
 
 # Create column for Hour of citation issuance. Drop observations with no Citation.Issue.Time data. ***0 OBSERVATIONS DROPPED***
 tickets <- tickets[!(is.na(tickets$Citation.Issue.Time) | tickets$Citation.Issue.Time == ""), ]
@@ -140,13 +145,16 @@ tickets <- within(tickets, Citation.Issue.MonthYear <- paste(Citation.Issue.Mont
 # Drop "Unapplied" and empty/NA observations within Citation.Status. Unapplied result is outside the scope of this project. ***84 OBSERVATIONS DROPPED***
 tickets <- tickets[!(is.na(tickets$Citation.Status) | tickets$Citation.Status =="" | tickets$Citation.Status == "Unapplied"),]
 
-# Drop extraneous variables: Object.ID (just row index), Location (Not need street address b/c we have latitude and longitude), Last.Edited.Date (empty column), Suspend.Code (NA), Disposition.Code (NA), Violation.Code (have this info in Violation variable)
+levels(tickets$Citation.Status) <- list("Open" = "Open", "Closed" = "Closed")
+
+# Drop extraneous variables: Object.ID (just row index), Location (Not need street address b/c we have latitude and longitude), Last.Edited.Date (empty column), Suspend.Code (NA), Disposition.Code (NA), Violation.Code (have this info in Violation variable), Citation.Issue.Time (Not needed for analysis)
 tickets$Object.ID <- NULL
 tickets$Location <- NULL
 tickets$Last.Edited.Date <- NULL
 tickets$Suspend.Code <- NULL
 tickets$Disposition.Code <- NULL
 tickets$Violation.Code <- NULL
+tickets$Citation.Issue.Time <- NULL
 
 # Drop "NO VIOL" observations in Violation variable. ***1 OBSERVATIONS DROPPED***
 tickets <- tickets[!(tickets$Violation == "NO VIOL"),]
@@ -183,11 +191,6 @@ str(tickets)
 ```
 
 ##Description of Cleaned Dataset
-```{r}
-install.packages("ggmap", repos="http://cran.rstudio.com/")
-library(ggmap)
-```
-
 ```{r}
 sanfran <- c(lon = -122.42, lat = 37.77)
 sanfran_map <- get_map(location = sanfran, zoom = 13)
@@ -319,11 +322,6 @@ ggplot(tickets, aes(x = Paid.On.Time)) + geom_histogram(binwidth = 0.5) + scale_
 ggplot(tickets, aes(x = Paid.On.Time)) + geom_histogram(binwidth = 0.5) + scale_x_continuous(breaks = seq(0, 1, 1)) + facet_wrap(~Citation.Issue.Year)
 ```
 
-```{r}
-install.packages("foreign")
-library(foreign)
-
-```
 ```{r}
 SanFranCensus <- readOGR(dsn = "C:/Users/JackCrum/Downloads/", layer = "SanFran.shp")
 
