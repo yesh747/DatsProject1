@@ -190,3 +190,4 @@ colnames(tickets)
 str(tickets)
 ```
 
+The cleaned dataset that we will be performing the data analysis on has 17072 observations and 19 variables. 
