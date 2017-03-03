@@ -123,6 +123,7 @@ tickets$Citation.Issue.DayOfWeek <- wday(tickets$Citation.Issue.Date)
 # Create column indicating whether the ticket was issued on: weekday (1), weekend (0)
 tickets$Citation.Issue.Weekday <- ifelse(tickets$Citation.Issue.DayOfWeek >= 2 & tickets$Citation.Issue.DayOfWeek <= 6, 1, 0)
 tickets$Citation.Issue.Weekday <- as.factor(tickets$Citation.Issue.Weekday)
+tickets$Citation.Issue.Weekday <- ifelse(tickets$Citation.Issue.Weekday == 0, "Weekend", "Weekday")
 
 # Convert Citation.Issue.DayOfWeek from 1, 2, 3, 4, 5, 6, 7 to Mon, Tues, Wed, Thurs, Fri, Sat
 tickets$Citation.Issue.DayOfWeek <- wday(tickets$Citation.Issue.Date, label = TRUE)
