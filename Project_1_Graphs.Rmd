@@ -16,7 +16,6 @@ library(lubridate)
 library(rgdal)
 library(sp)
 library(raster)
-
 # mapping/plooting
 library(ggmap)
 library(foreign)
@@ -179,7 +178,7 @@ tickets <- tickets[!(tickets$Violation == "NO VIOL"),]
 
 Overall, we dropped 106 of the original 17,178 observations in the dataset. This only accounts for `r round((106/17178)*100,2)` percent of the dataset. Thus, we are confident that we did not introduce any inherent biases to the data by dropping the aforementioned observations. 
 
-#Cleaned Dataset
+##Cleaned Dataset
 
 ```{r Cleaned Dataset Properties, tidy=T, results='hide', message=FALSE}
 #Check dimensions of cleaned dataset 
@@ -190,4 +189,4 @@ colnames(tickets)
 str(tickets)
 ```
 
-The cleaned dataset that we will be performing the data analysis on has 17072 observations and 19 variables. 
+After cleaning the dataset to begin exploratory data anlysis, there are 17072 observations and 19 variables.
