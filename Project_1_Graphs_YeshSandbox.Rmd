@@ -7,7 +7,6 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(plyr)
 library(dplyr)
 library(tidyverse)
 library(tidyr)
@@ -212,7 +211,7 @@ ggplot(data=df, aes(Violation)) + geom_bar() + coord_flip() + geom_text(stat="co
 
 
 df.violation <- aggregate(df[,c("Amount.Paid")], by=list(df$Violation), FUN=sum)
-df.violation <- rename(df.violation, c("Group.1"="Violation", "x"="Total.Revenue"))
+df.violation <- rename(df.violation, Violation = Group.1, Total.Revenue = x)
 
 ggplot(df.violation, aes(x=Violation, y=Total.Revenue)) + geom_bar(stat="identity") + coord_flip() + geom_text(aes(label=Total.Revenue))
 
@@ -224,7 +223,7 @@ rm(df.violation)
 ```{r violations3, tidy=T, message=FALSE}
 
 df.violWeekday <- aggregate(df[,c("Amount.Paid")], by=list(df$Violation, df$Citation.Issue.Weekday), FUN=sum)
-df.violWeekday <- rename(df.violWeekday, c("Group.1"="Violation", "Group.2"="Weekday", "x"="Total.Revenue"))
+df.violWeekday <- rename(df.violWeekday, Violation = Group.1, Weekday = Group.2, Total.Revenue = x)
 df.violWeekday$Daily.Average.Revenue <- ifelse(df.violWeekday$Weekday == 1, df.violWeekday$Total.Revenue/5, df.violWeekday$Total.Revenue/2)
 df.violWeekday$Weekday <- ifelse(df.violWeekday$Weekday == 0, "Weekend", "Weekday")
 
@@ -237,13 +236,13 @@ rm(df.violWeekday)
 # What times get the most tickets for the top 3 violation types?
 ```{r violations4, tidy=T, message=FALSE}
 
-ViolCount <- count(df$Violation)
+ViolCount <- df %>% group_by(Violation) %>% summarise(freq=n())
 topViol <- ViolCount[order(-ViolCount$freq),]
 topViol <- topViol[1:3,]
 
+df.topViol <- subset(df, df$Violation == topViol$Violation)
 
-df.topViol <- subset(df, df$Violation == topViol[1,1] | df$Violation == topViol[2,1] | df$Violation == topViol[3,1])
-df.topViol <- rename(df.topViol, c("Violation"="Top.3.Violations"))
+df.topViol <- rename(df.topViol, Top.3.Violations = Violation)
 
 p1 <- ggplot(df.topViol, aes(Citation.Issue.Hour, fill=Top.3.Violations))
 p1 + geom_density(alpha = .6)
@@ -252,6 +251,7 @@ p2 <- ggplot(df.topViol, aes(Amount.Paid, fill=Top.3.Violations))
 p2 + geom_density(alpha = .6)
 
 rm(p1, p2, topViol, ViolCount, df.topViol)
+
 ```
 
 ----------------------------------------------------------------------
