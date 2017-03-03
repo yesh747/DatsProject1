@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(plyr)
 library(dplyr)
 library(tidyverse)
 library(tidyr)
@@ -120,12 +121,12 @@ tickets$Citation.Issue.Year <- year(tickets$Citation.Issue.Date)
 # Create column indicating DayOfWeek (Sunday (1) to Saturday (7)) that the ticket was issued
 tickets$Citation.Issue.DayOfWeek <- wday(tickets$Citation.Issue.Date)
 
+# Convert Citation.Issue.DayOfWeek from 1, 2, 3, 4, 5, 6, 7 to Mon, Tues, Wed, Thurs, Fri, Sat
+tickets$Citation.Issue.DayOfWeek <- wday(tickets$Citation.Issue.Date, label = TRUE)
+
 # Create column indicating whether the ticket was issued on: weekday (1), weekend (0)
 tickets$Citation.Issue.Weekday <- ifelse(tickets$Citation.Issue.DayOfWeek >= 2 & tickets$Citation.Issue.DayOfWeek <= 6, 1, 0)
 tickets$Citation.Issue.Weekday <- as.factor(tickets$Citation.Issue.Weekday)
-
-# Convert Citation.Issue.DayOfWeek from 1, 2, 3, 4, 5, 6, 7 to Mon, Tues, Wed, Thurs, Fri, Sat
-tickets$Citation.Issue.DayOfWeek <- wday(tickets$Citation.Issue.Date, label = TRUE)
 
 # Create column for Hour of citation issuance. Drop observations with no Citation.Issue.Time data. ***0 OBSERVATIONS DROPPED***
 tickets <- tickets[!(is.na(tickets$Citation.Issue.Time) | tickets$Citation.Issue.Time == ""), ]
@@ -192,3 +193,40 @@ str(tickets)
 
 
 The cleaned dataset that we will be performing the data analysis on has 17072 observations and 19 variables. 
+
+----------------------------------------------------------------------
+
+# What traffic only lane violations are most common? - Yesh
+```{r violations, tidy=T, message=FALSE}
+
+df <- tickets
+
+summary(df$Violation)
+
+ggplot(data=df, aes(Violation)) + geom_bar() + coord_flip() + geom_text(stat="count", aes(label=..count..))
+```
+
+# What traffic lane violations make up the most revenue?
+```{r violations2, tidy=T, message=FALSE}
+
+
+df.violation <- aggregate(df[,c("Amount.Paid")], by=list(df$Violation), FUN=sum)
+df.violation <- rename(df.violation, c("Group.1"="Violation", "x"="Total.Revenue"))
+
+ggplot(df.violation, aes(x=Violation, y=Total.Revenue)) + geom_bar(stat="identity") + coord_flip() + geom_text(aes(label=Total.Revenue))
+
+```
+
+# What violations produce the most revenue on weekends and weekdays?
+```{r violations3}
+
+df.violWeekend <- aggregate(df[,c("Amount.Paid")], by=list(df$Violation, df$Citation.Issue.Weekday), FUN=sum)
+df.violWeekend <- rename(df.violWeekend, c("Group.1"="Violation", "x"="Total.Revenue"))
+
+ggplot(df.violWeekend, aes(x=Violation, y=Total.Revenue)) + geom_bar(stat="identity") + coord_flip() + geom_text(aes(label=Total.Revenue))
+
+```
+
+
+
+----------------------------------------------------------------------
