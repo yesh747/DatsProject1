@@ -7,9 +7,11 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+#Data cleaning and munging packages
 library(dplyr)
 library(tidyverse)
 library(tidyr)
+library(doBy)
 # date format library
 library(lubridate)
 # geolibraries
@@ -41,7 +43,7 @@ str(tickets)
 
 ##Summary of the Dataset 
 
-The dataset consists of San Francisco Municipal Transportation Agency (SFMTA) driver reported transit only lane violations from March 2008 to February 2015. The dataset contains 17,178 observations and 18 variables. The data were obtained from the US government's open data site at https://catalog.data.gov/dataset/muni-driver-reported-transit-only-lane-violations. 
+The dataset consists of San Francisco Municipal Transportation Agency (SFMTA) driver reported transit only lane violations from March 2008 to February 2015. The dataset contains `r NROW(tickets)` observations and `r NCOL(tickets)` variables. The data were obtained from the US government's open data site at https://catalog.data.gov/dataset/muni-driver-reported-transit-only-lane-violations. 
 
 ###Description of Variables in the dataset: 
 
@@ -145,7 +147,7 @@ tickets <- tickets[!(is.na(tickets$Citation.Status) | tickets$Citation.Status ==
 
 levels(tickets$Citation.Status) <- list("Open" = "Open", "Closed" = "Closed")
 
-# Drop extraneous variables: Object.ID (just row index), Location (Not need street address b/c we have latitude and longitude), Last.Edited.Date (empty column), Suspend.Code (NA), Disposition.Code (NA), Violation.Code (have this info in Violation variable), Citation.Issue.Time (Not needed for analysis)
+# Drop extraneous variables: Object.ID (just row index), Location (Not need street address b/c we have latitude and longitude), Last.Edited.Date (empty column), Suspend.Code (NA), Disposition.Code (NA), Violation.Code (have this info in Violation variable), Citation.Issue.Time (Not needed for analysis), Suspend.Process.Date and Suspend.Until.Date (outside scope of analysis), Geom (we split this into latitude and longitude and have all this info already)
 tickets$Object.ID <- NULL
 tickets$Location <- NULL
 tickets$Last.Edited.Date <- NULL
@@ -153,7 +155,9 @@ tickets$Suspend.Code <- NULL
 tickets$Disposition.Code <- NULL
 tickets$Violation.Code <- NULL
 tickets$Citation.Issue.Time <- NULL
-
+tickets$Suspend.Process.Date <- NULL
+tickets$Suspend.Until.Date <- NULL
+tickets$Geom <- NULL
 # Drop "NO VIOL" observations in Violation variable. ***1 OBSERVATIONS DROPPED***
 tickets <- tickets[!(tickets$Violation == "NO VIOL"),]
 
@@ -190,9 +194,30 @@ colnames(tickets)
 str(tickets)
 ```
 
-<<<<<<< HEAD
-After cleaning the dataset to begin exploratory data anlysis, there are 17072 observations and 19 variables.
-=======
 
-The cleaned dataset that we will be performing the data analysis on has 17072 observations and 19 variables. 
->>>>>>> origin/master
+After cleaning the dataset to begin exploratory data anlysis, there are `r NROW(tickets)` observations and `r NCOL(tickets)` variables.
+
+# Mike EDA 
+
+##How have the prices of TOLE violations changed over time?
+
+```{r prices change over time EDA, tidy=T, message=F}
+#summary stats and histogram of fine amount
+summary(tickets$Fine.Amount)
+hist(tickets$Fine.Amount)
+#Because the distribution of fine amount has several high-end outliers, we should be using the median as our measure of central tendency. This is even more clear when comparing the difference between the mean and median (112.7 and 85). 
+median(tickets$Fine.Amount)
+
+#fine amount by violation
+
+#fine amount by year
+
+#fine amount by year, violation
+
+#
+
+```
+
+
+##Are more citations issued on certain days of the week? Are more tickets issued on weekdays than weekends?
+
