@@ -387,7 +387,7 @@ AverageWeek
 MedianWeek <- median(WeeklyTotals$Total)
 MedianWeek
 
-ggplot(WeeklyTotals, aes(x = Total)) + geom_histogram(fill = "red", color = "black", binwidth = 200) 
+ggplot(WeeklyTotals, aes(x = Total)) + geom_histogram(fill = "red", color = "black", binwidth = 500) + geom_vline(xintercept = AverageWeek, linetype = "longdash", colour = "blue") + geom_vline(xintercept = MedianWeek, linetype = "twodash" , colour = "green")
 ```
 
 
