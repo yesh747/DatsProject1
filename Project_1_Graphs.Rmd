@@ -124,7 +124,6 @@ tickets$Citation.Issue.DayOfWeek <- wday(tickets$Citation.Issue.Date)
 # Create column indicating whether the ticket was issued on: weekday (1), weekend (0)
 tickets$Citation.Issue.Weekday <- ifelse(tickets$Citation.Issue.DayOfWeek >= 2 & tickets$Citation.Issue.DayOfWeek <= 6, 1, 0)
 tickets$Citation.Issue.Weekday <- as.factor(tickets$Citation.Issue.Weekday)
-tickets$Citation.Issue.Weekday <- ifelse(tickets$Citation.Issue.Weekday == 0, "Weekend", "Weekday")
 
 # Convert Citation.Issue.DayOfWeek from 1, 2, 3, 4, 5, 6, 7 to Mon, Tues, Wed, Thurs, Fri, Sat
 tickets$Citation.Issue.DayOfWeek <- wday(tickets$Citation.Issue.Date, label = TRUE)
@@ -208,10 +207,16 @@ hist(tickets$Fine.Amount)
 #Because the distribution of fine amount has several high-end outliers, we should be using the median as our measure of central tendency. This is even more clear when comparing the difference between the mean and median (112.7 and 85). 
 median(tickets$Fine.Amount)
 
-#fine amount by violation
-
+#median fine amount by violation
+fine_by_viol <- tickets %>% 
+  group_by(Violation) %>% 
+  summarise(median = median(Fine.Amount))
+fine_by_viol
 #fine amount by year
-
+fine_by_year <- tickets %>%
+  group_by(Citation.Issue.Year) %>% 
+  summarise(median = median(Fine.Amount))
+fine_by_year
 #fine amount by year, violation
 
 #
