@@ -18,8 +18,9 @@ library(lubridate)
 library(rgdal)
 library(sp)
 library(raster)
-# mapping/plooting
+# mapping/plotting
 library(ggmap)
+library(ggplot2)
 library(foreign)
 ```
 
@@ -67,6 +68,7 @@ The dataset consists of San Francisco Municipal Transportation Agency (SFMTA) dr
 * `Geom` -- The latitude and longitude (latitutde, longitude) of the traffic only lane violation 
 
 
+
 ###Explanations of Violation variable:
  * 'DBL Park' -- Double Parking
  * 'TWAWY ZN#1' and 'TWAWY ZN#2' -- Towaway Zone 1 and Towaway Zone 2
@@ -92,6 +94,7 @@ tickets$Citation.Issue.Month <- month(tickets$Citation.Issue.Date, label = TRUE)
 # Convert Amount.Paid from factor to numeric
 tickets$Amount.Paid <- as.numeric(tickets$Amount.Paid)
 ```
+
 
 ## Data Cleaning
 ```{r Data Cleaning, tidy=T}
@@ -212,14 +215,29 @@ fine_by_viol <- tickets %>%
   group_by(Violation) %>% 
   summarise(median = median(Fine.Amount))
 fine_by_viol
+hist(fine_by_viol$median)
+
 #fine amount by year
 fine_by_year <- tickets %>%
   group_by(Citation.Issue.Year) %>% 
   summarise(median = median(Fine.Amount))
-fine_by_year
-#fine amount by year, violation
+head(fine_by_year)
 
-#
+#fine amount by year, violation
+fine_by_year_viol <- tickets %>% 
+  group_by(Violation,Citation.Issue.Year) %>% 
+  summarise(median = median(Fine.Amount))
+head(fine_by_year_viol)
+
+#plot fine by year and violation to see change and trends
+fine.plot <- ggplot(data = fine_by_year_viol, aes(x = Citation.Issue.Year, y = median))
+fine.plot <- fine.plot + geom_line() + geom_point() 
+fine.plot <- fine.plot + facet_wrap(~ Violation)
+fine.plot
+
+# ********** Looks like we should look at violations and the years they occur in and maybe get more specific on type of violation*********
+
+
 
 ```
 
