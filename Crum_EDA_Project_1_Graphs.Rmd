@@ -371,42 +371,12 @@ round(a, 3)
 
 ```
 
-```{r Analysis Medians}
+# # Analysis of Daily, Weekly, and Monthly Total Revenues
+
+```{r Analysis Means}
 dateRange <- c(tickets$Citation.Issue.Date) 
 x <- as.POSIXlt(dateRange) 
 tickets$Citation.Issue.Week <- strftime(x,format="%W")
-
-#Weekly Total Revenue Mean compared to each Week's Total Revenue
-#Weekly Analysis
-WeeklyTotals<- tickets %>% group_by(Citation.Issue.Week, Citation.Issue.Month, Citation.Issue.Year) %>% summarise(Total = sum(Amount.Paid))
-
-head(WeeklyTotals)
-
-mean.Weekly <- mean(WeeklyTotals$Total)
-mean.Weekly
-
-MedianWeek <- median(WeeklyTotals$Total)
-MedianWeek
-
-ggplot(WeeklyTotals, aes(x = Total)) + geom_histogram(fill = "red", color = "black", binwidth = 500) + geom_vline(xintercept = AverageWeek, linetype = "longdash", colour = "blue") + geom_vline(xintercept = MedianWeek, linetype = "twodash" , colour = "green")
-sd.Week <- sd(WeeklyTotals$Total)
-sd.Week
-
-#Monthly Analysis
-MonthlyTotals<- tickets %>% group_by(Citation.Issue.Month, Citation.Issue.Year) %>% summarise(Total = sum(Amount.Paid))
-
-head(MonthlyTotals)
-
-AverageMonth <- mean(MonthlyTotals$Total)
-AverageMonth
-
-MedianMonth <- median(MonthlyTotals$Total)
-MedianMonth
-
-ggplot(MonthlyTotals, aes(x = Total)) + geom_histogram(fill = "red", color = "black", binwidth = 2000) + geom_vline(xintercept = AverageMonth, linetype = "longdash", colour = "blue") + geom_vline(xintercept = MedianMonth, linetype = "twodash" , colour = "green")
-sd.month <- sd(MonthlyTotals$Total)
-sd.month
-
 
 #Daily Analysis
 DailyTotals<- tickets %>% group_by(Citation.Issue.Date) %>% summarise(Total = sum(Amount.Paid))
@@ -426,6 +396,38 @@ ggplot(DailyTotals, aes(x = Total)) +
 
 sd.day <- sd(DailyTotals$Total)
 sd.day
+
+#Weekly Total Revenue Mean compared to each Week's Total Revenue
+#Weekly Analysis
+WeeklyTotals<- tickets %>% group_by(Citation.Issue.Week, Citation.Issue.Month, Citation.Issue.Year) %>% summarise(Total = sum(Amount.Paid))
+
+head(WeeklyTotals)
+
+mean.Weekly <- mean(WeeklyTotals$Total)
+mean.Weekly
+
+MedianWeek <- median(WeeklyTotals$Total)
+MedianWeek
+
+ggplot(WeeklyTotals, aes(x = Total)) + geom_histogram(aes(y = ..density..), fill = "pink", colour = "black", binwidth = 500) + geom_density(alpha=.5, fill="red") + geom_vline(xintercept = AverageWeek, linetype = "longdash", colour = "blue") + geom_vline(xintercept = MedianWeek, linetype = "twodash" , colour = "green")
+sd.Week <- sd(WeeklyTotals$Total)
+sd.Week
+
+#Monthly Analysis
+MonthlyTotals<- tickets %>% group_by(Citation.Issue.Month, Citation.Issue.Year) %>% summarise(Total = sum(Amount.Paid))
+
+head(MonthlyTotals)
+
+AverageMonth <- mean(MonthlyTotals$Total)
+AverageMonth
+
+MedianMonth <- median(MonthlyTotals$Total)
+MedianMonth
+
+ggplot(MonthlyTotals, aes(x = Total)) + geom_histogram(aes(y = ..density..), fill = "pink", colour = "black", binwidth = 2000) + geom_density(alpha=.5, fill= "red") 
+sd.month <- sd(MonthlyTotals$Total)
+sd.month
+
 
 
 ```
@@ -456,7 +458,16 @@ upper.limit.Week <- mean.Weekly + (1.96 * std.error.Week)
 lower.limit.Week
 upper.limit.Week
 ```
+```{r}
+asshole <- tickets %>% group_by(Violation, Citation.Issue.Year) %>% summarise(count = n())
+asshole
+```
 
+```{r}
+ass <- tickets %>% group_by(Citation.Issue.Year) %>% summarise(Revenue = sum(Amount.Paid))
+ass
 
+ass2 <- tickets %>% group_by(Citation.Issue.Month, Citation.Issue.Year) %>% summarise(Revenue = sum(Amount.Paid))
+ass2
 
-
+```
