@@ -382,8 +382,8 @@ WeeklyTotals<- tickets %>% group_by(Citation.Issue.Week, Citation.Issue.Month, C
 
 head(WeeklyTotals)
 
-AverageWeek <- mean(WeeklyTotals$Total)
-AverageWeek
+mean.Weekly <- mean(WeeklyTotals$Total)
+mean.Weekly
 
 MedianWeek <- median(WeeklyTotals$Total)
 MedianWeek
@@ -419,9 +419,15 @@ AverageDay
 MedianDay <- median(DailyTotals$Total)
 MedianDay
 
-ggplot(DailyTotals, aes(x = Total)) + geom_histogram(fill = "red", color = "black", binwidth = 100) + geom_vline(xintercept = AverageDay, linetype = "longdash", colour = "blue") + geom_vline(xintercept = MedianDay, linetype = "twodash" , colour = "green")
+ggplot(DailyTotals, aes(x = Total)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="pink") + 
+  geom_density(alpha=.5, fill="red") + 
+  geom_vline(xintercept = AverageDay, linetype = "longdash", colour = "blue") + geom_vline(xintercept = MedianDay, linetype = "twodash" , colour = "green")
+
 sd.day <- sd(DailyTotals$Total)
 sd.day
+
+
 ```
 
 
@@ -440,7 +446,16 @@ ggplot(a, aes(x = Revenue)) + geom_histogram(binwidth = 100, color = "black", fi
 
 ```
 
-
+```{r}
+TotalWeek <- WeeklyTotals$Total
+n.Weekly <- length(TotalWeek)
+std.error.Week <- sd.Week / sqrt(n.Weekly)
+std.error.Week
+lower.limit.Week <- mean.Weekly - (1.96 * std.error.Week)
+upper.limit.Week <- mean.Weekly + (1.96 * std.error.Week)
+lower.limit.Week
+upper.limit.Week
+```
 
 
 
