@@ -424,7 +424,9 @@ AverageMonth
 MedianMonth <- median(MonthlyTotals$Total)
 MedianMonth
 
-ggplot(MonthlyTotals, aes(x = Total)) + geom_histogram(aes(y = ..density..), fill = "pink", colour = "black", binwidth = 2000) + geom_density(alpha=.5, fill= "red") 
+ggplot(MonthlyTotals, aes(x = Total)) + geom_histogram(aes(y = ..density..), fill = "pink", colour = "black", binwidth = 2000) + geom_density(alpha=.5, fill= "red") + geom_vline(xintercept = AverageMonth, linetype = "longdash", colour = "blue") + geom_vline(xintercept = MedianMonth, linetype = "twodash" , colour = "green")
+
+
 sd.month <- sd(MonthlyTotals$Total)
 sd.month
 
