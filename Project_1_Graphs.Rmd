@@ -207,21 +207,28 @@ After cleaning the dataset to begin exploratory data anlysis, there are `r NROW(
 #summary stats and histogram of fine amount
 summary(tickets$Fine.Amount)
 hist(tickets$Fine.Amount)
+
 #Because the distribution of fine amount has several high-end outliers, we should be using the median as our measure of central tendency. This is even more clear when comparing the difference between the mean and median (112.7 and 85). 
 median(tickets$Fine.Amount)
 
-#median fine amount by violation
+# find the median fine amount by violation
 fine_by_viol <- tickets %>% 
   group_by(Violation) %>% 
   summarise(median = median(Fine.Amount))
 fine_by_viol
 hist(fine_by_viol$median)
 
-#fine amount by year
+# find the median fine amount by year
 fine_by_year <- tickets %>%
   group_by(Citation.Issue.Year) %>% 
   summarise(median = median(Fine.Amount))
 head(fine_by_year)
+
+#plot median fine amount by year to see trend in prices over time
+fine.plot.year <- ggplot(data = fine_by_year, aes(x = Citation.Issue.Year, y = median))
+fine.plot.year <- fine.plot.year + geom_line() + geom_point() 
+fine.plot.year
+# *******Median fine amount per year seems to have increased significantly over time. Index with inflation to see if this is really the case?*******
 
 #fine amount by year, violation
 fine_by_year_viol <- tickets %>% 
@@ -230,14 +237,12 @@ fine_by_year_viol <- tickets %>%
 head(fine_by_year_viol)
 
 #plot fine by year and violation to see change and trends
-fine.plot <- ggplot(data = fine_by_year_viol, aes(x = Citation.Issue.Year, y = median))
-fine.plot <- fine.plot + geom_line() + geom_point() 
-fine.plot <- fine.plot + facet_wrap(~ Violation)
-fine.plot
+fine.plot.yv <- ggplot(data = fine_by_year_viol, aes(x = Citation.Issue.Year, y = median))
+fine.plot.yv <- fine.plot.yv + geom_line() + geom_point() 
+fine.plot.yv <- fine.plot.yv + facet_wrap(~ Violation)
+fine.plot.yv
 
 # ********** Looks like we should look at violations and the years they occur in and maybe get more specific on type of violation*********
-
-
 
 ```
 
