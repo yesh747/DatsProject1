@@ -31,6 +31,7 @@ tickets <- read.csv('tickets.csv', header=T)
 
 ```{r Analysis Means}
 #Create the week variable
+tickets$Citation.Issue.Date <- as.Date(tickets$Citation.Issue.Date)
 dateRange <- c(tickets$Citation.Issue.Date) 
 x <- as.POSIXlt(dateRange) 
 tickets$Citation.Issue.Week <- strftime(x,format="%W")
@@ -128,5 +129,10 @@ qqline(Monthly)
 
 
 ggplot(MonthlyTotals, aes(x = Total)) + geom_histogram(aes(y = ..density..), fill = "pink", colour = "black", binwidth = 2000) + geom_density(alpha=.5, fill= "red") + geom_vline(xintercept = AverageMonth, linetype = "longdash", colour = "blue") + geom_vline(xintercept = MedianMonth, linetype = "twodash" , colour = "green")
+
+```
+
+```{r}
+HI
 
 ```
