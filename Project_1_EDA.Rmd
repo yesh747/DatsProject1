@@ -11,10 +11,25 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ----------------------------------------------------------------------
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggmap)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(tidyr)
+# date format library
+library(lubridate)
+# geolibraries
+library(rgdal)
+library(sp)
+library(raster)
+```
+
 # Yesh's Stuff
 ## What traffic only lane violations are most common?
 ```{r violations, tidy=T, message=FALSE, echo=FALSE}
-
+#Read in the cleaned dataset
 tickets <- read.csv("tickets.csv", header=TRUE)
 
 ggplot(data=tickets, aes(Violation)) + geom_bar() + coord_flip() + geom_text(stat="count", aes(label=..count..))
@@ -219,3 +234,181 @@ fine.plot.yv
 
 ##Are more citations issued on certain days of the week? Are more tickets issued on weekdays than weekends?
 
+#Jack EDA
+
+```{r Violation Type per Hour}
+# Proportion of Violation Type per Hour
+
+Tickets.per.Hour <- tickets %>% group_by(Citation.Issue.Hour) %>% summarise(count = n())
+Tickets.per.Hour
+
+ggplot(tickets, aes(x = Citation.Issue.Hour, fill = Violation)) + geom_bar(position = "fill") + scale_x_continuous(breaks = seq(0, 24, 1)) 
+
+# Graph shows almost entirely Double Parking and Bus Zone Violations during non-rush-hour  and almost entirely Towaway and Prohibited Parking during rush hour
+```
+
+```{r Distribution of each Violation Type over Day}
+#Distributions of each Violation Type over Course of a Day
+
+ggplot(tickets, aes(x = Citation.Issue.Hour)) + geom_histogram(fill = "red", color = "black") + facet_wrap(~Violation)
+
+```
+
+```{r Cost Change of Each Violation Type over Hour, Day, Month, and Year}
+# These graphs show how Fine Amount changes over each hour, day of the week, month, and year for each Violation Type
+
+ggplot(tickets, aes(x = Citation.Issue.Hour, y = Fine.Amount)) + geom_point() + facet_wrap(~Violation)
+
+ggplot(tickets, aes(x = Citation.Issue.DayOfWeek, y = Fine.Amount)) + geom_point() + facet_wrap(~Violation)
+
+ggplot(tickets, aes(x = Citation.Issue.Month, y = Fine.Amount)) + geom_point() + facet_wrap(~Violation)
+
+ggplot(tickets, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + facet_wrap(~Violation)
+
+# There are appears to be no change over Hour, Day, or Month with a slight increase in prices each year, with a larger spike in 2012. 
+```
+
+```{r Cost of six main violations over Year}
+#Analysis of price changes over the years by Violation type
+
+#Total of each type of Violation
+ViolationCount <- tickets %>% group_by(Violation) %>% summarise(count = n())
+ViolationCount
+
+#Create objects for each type of Violation
+Violation.DBLPRK <- tickets %>% filter(Violation == "DBL PARK")
+Violation.BUSZONE <- tickets %>% filter(Violation == "BUS ZONE")
+Violation.PKPHBOTD <- tickets %>% filter(Violation == "PK PHB OTD")
+Violation.PRKPROHIB <- tickets %>% filter(Violation == "PRK PROHIB")
+Violation.TOWAWAY1 <- tickets %>% filter(Violation == "TWAWY ZN#1")
+Violation.TOWAWAYzONE <- tickets %>% filter(Violation == "TWAWY ZONE")
+
+#Graphing the change in fine for each Violation type from 2010-2015
+
+ggplot(Violation.DBLPRK, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Double Parking")
+
+ggplot(Violation.BUSZONE, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Bus Zone")
+
+ggplot(Violation.PKPHBOTD, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Tow-Away Zone - Outside Downtown Core")
+
+ggplot(Violation.PRKPROHIB, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Tow-Away Zone - Downtown Core")
+
+ggplot(Violation.TOWAWAY1, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Tow Away Zone 1")
+
+ggplot(Violation.TOWAWAYzONE, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Tow Away Zone 2")
+
+#General increases in fines over the interval with a noticable jump in prices in 2012
+```
+
+
+## What Hours have the most Violations
+
+```{r Histogram of Citations per Hour, tidy = T}
+# Histogram of Citations per Hour
+ByHour <- tickets %>% group_by(Citation.Issue.Hour) %>% summarise(Percentage = round(n()/nrow(tickets) * 100, digits = 5))
+ByHour
+
+ggplot(tickets, aes(x = Citation.Issue.Hour)) + geom_histogram(binwidth = 1, fill = "red", color = "black") + scale_x_continuous(breaks = seq(0, 24, 1)) 
+```
+
+## Are more tickets issued during Rush Hour or Off Hours
+
+```{r}
+#Created variable Day of Month for purposes of day-to-day calculations
+tickets$Citation.Issue.Day <- day(tickets$Citation.Issue.Date)
+
+
+RushHour <- tickets %>% filter((Citation.Issue.Hour >= 7 & Citation.Issue.Hour <= 9) | (Citation.Issue.Hour >= 16 & Citation.Issue.Hour <= 18))
+NonRushHour <- tickets %>% filter((Citation.Issue.Hour < 7 | Citation.Issue.Hour > 9) & (Citation.Issue.Hour < 16 | Citation.Issue.Hour > 18))
+nrow(RushHour)
+nrow(NonRushHour)
+PercentRush <- nrow(RushHour) / nrow(tickets) * 100
+PercentRush
+```
+
+```{r}
+t <- tickets %>% group_by(Citation.Issue.Date) %>% summarise(median = median(Fine.Amount))
+median(t$median)
+
+g <- tickets %>% group_by(Citation.Issue.DayOfWeek) %>% summarise(median = median(Fine.Amount))
+g
+
+```
+
+
+## Comparing Distributions of Rush Hour and Off Hour Totals per Day 
+
+```{r EDA for Rushhour and NonRushhour}
+#EDA for Rushhour vs NonRushhour
+dim(RushHour)
+str(RushHour)
+nrow(RushHour)
+head(RushHour)
+
+#Calculate total Rushhour violations for each day
+Rush <- RushHour %>% group_by(Citation.Issue.Day, Citation.Issue.Month, Citation.Issue.Year) %>% summarise(count = n())
+RushTotals <- Rush$count
+
+#EDA of Statistics of Rushhour
+mean(RushTotals)
+median(RushTotals)
+var(RushTotals)
+sd(RushTotals)
+quantile(RushTotals, c(0, .1, .2, .3, .4, .5, .6, .7, .8, .9, .95, 1))
+shapiro.test(RushTotals)
+
+#EDA Graphs for Rushhour
+qqnorm(RushTotals)
+qqline(RushTotals)
+
+boxplot(RushTotals)
+
+plot(RushTotals, dbinom(RushTotals, 30, 0.25), type = "h")
+
+#EDA of NonRushhour
+str(NonRushHour)
+dim(NonRushHour)
+nrow(NonRushHour)
+
+NonRush <- NonRushHour %>% group_by(Citation.Issue.Day, Citation.Issue.Month, Citation.Issue.Year) %>% summarise(count = n())
+NonRushTotals <- NonRush$count
+
+mean(NonRushTotals)
+median(NonRushTotals)
+sd(NonRushTotals)
+var(NonRushTotals)
+quantile(NonRushTotals, c(0, .1, .2, .3, .4, .5, .6, .7, .8, .9, .95, 1))
+shapiro.test(NonRushTotals)
+qqnorm(NonRushTotals)
+qqline(NonRushTotals)
+
+boxplot(NonRushTotals)
+
+ggplot(Rush, aes(x = count)) + geom_histogram(binwidth = 1, fill = "red", color = "black") + scale_x_continuous(breaks = seq(0, 130, 10)) + geom_histogram(data = NonRush, aes(x = count), binwidth = 1, fill = "blue", color = "black", alpha = 0.7) + scale_x_continuous(breaks = seq(0, 130, 10)) 
+
+plot(NonRushTotals, dbinom(NonRushTotals, 30, 0.25), type = "h")
+
+```
+
+## What Violations occur more during Rush Hour and what occur more during Off Hours?
+
+```{r Violation Type per Hour}
+# Proportion of Violation Type per Hour
+
+Tickets.per.Hour <- tickets %>% group_by(Citation.Issue.Hour) %>% summarise(count = n())
+Tickets.per.Hour
+
+ggplot(tickets, aes(x = Citation.Issue.Hour, fill = Violation)) + geom_bar(position = "fill") + scale_x_continuous(breaks = seq(0, 24, 1)) 
+
+# Graph shows almost entirely Double Parking and Bus Zone Violations during non-rush-hour  and almost entirely Towaway and Prohibited Parking during rush hour
+
+Violation.Rush <- RushHour %>% group_by(Violation) %>% summarise(Total_During_Rush = n())
+Violation.Rush
+
+Violation.Off <- NonRushHour %>% group_by(Violation) %>% summarise(Total_During_Off = n())
+Violation.Off
+
+a <- Violation.Rush$Total_During_Rush / (Violation.Rush$Total_During_Rush + Violation.Off$Total_During_Off)
+round(a, 3)
+
+```
