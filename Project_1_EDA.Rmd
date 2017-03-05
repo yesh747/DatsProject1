@@ -11,10 +11,25 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ----------------------------------------------------------------------
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggmap)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(tidyr)
+# date format library
+library(lubridate)
+# geolibraries
+library(rgdal)
+library(sp)
+library(raster)
+```
+
 # Yesh's Stuff
 ## What traffic only lane violations are most common?
 ```{r violations, tidy=T, message=FALSE, echo=FALSE}
-
+#Read in the cleaned dataset
 tickets <- read.csv("tickets.csv", header=TRUE)
 
 ggplot(data=tickets, aes(Violation)) + geom_bar() + coord_flip() + geom_text(stat="count", aes(label=..count..))
@@ -78,68 +93,33 @@ rm(p1, p2, topViol, ViolCount, tickets.topViol)
 # Mike EDA 
 
 ```{r EDA of Time variables, tidy=T, message=F}
-
 # Month
 table(tickets$Citation.Issue.Month)
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Month))
-  ##Without 2015 
-tickets_to2014 <- filter(tickets, tickets$Citation.Issue.Year < 2015)
-table(tickets_to2014$Citation.Issue.Month)
-ggplot(data = tickets_to2014) + geom_bar(mapping = aes(x = tickets_to2014$Citation.Issue.Month))
-  ##Without 2008 and 2015
-tickets_no_partials <- filter(tickets, tickets$Citation.Issue.Year > 2008 & tickets$Citation.Issue.Year < 2015)
-table(tickets_no_partials$Citation.Issue.Month)
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Citation.Issue.Month))
 
 # Year
 table(tickets$Citation.Issue.Year)
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Year))
-#  *****There are only 37 violations for the beginning of 2015. Should be dropped*****
-#  *****Could also consider dropping 2008 as that is a partial year as well. (157)****** 
-  ##Without 2015
-table(tickets_to2014$Citation.Issue.Year)
-ggplot(data = tickets_to2014) + geom_bar(mapping = aes(x = tickets_to2014$Citation.Issue.Year))
-  ##Without 2008 and 2015
-table(tickets_no_partials$Citation.Issue.Year)
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Citation.Issue.Year))
 
 # Day of Week 
 table(tickets$Citation.Issue.DayOfWeek)
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.DayOfWeek))
-  ##Without 2015
-table(tickets_to2014$Citation.Issue.DayOfWeek)
-ggplot(data = tickets_to2014) + geom_bar(mapping = aes(x = tickets_to2014$Citation.Issue.DayOfWeek))
-  ##Without 2008 and 2015
-table(tickets_no_partials$Citation.Issue.DayOfWeek)
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Citation.Issue.DayOfWeek))
 # ******* Let's look at how we coded the Day of Week variable. This trend shoud be lower on Sunday ******
 
 # Weekday
 table(tickets$Citation.Issue.Weekday)
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Weekday))
-  ##Without 2015
-table(tickets_to2014$Citation.Issue.Weekday)
-ggplot(data = tickets_to2014) + geom_bar(mapping = aes(x = tickets_to2014$Citation.Issue.Weekday))
-  ##Without 2008 and 2015
-table(tickets_no_partials$Citation.Issue.Weekday)
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Citation.Issue.Weekday))
 # ******* Let's look at how we coded the Day of Week variable. This trend shoud be lower on Sunday ******
 
 #Hour 
 table(tickets$Citation.Issue.Hour)
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Hour))
-  ##Without 2015
-table(tickets_to2014$Citation.Issue.Hour)
-ggplot(data = tickets_to2014) + geom_bar(mapping = aes(x = tickets_to2014$Citation.Issue.Hour))
-  ##Without 2008 and 2015
-table(tickets_no_partials$Citation.Issue.Hour)
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Citation.Issue.Hour))
 # People are getting boned during rush hour on the way home
 
 #Summary stats for the different tickets datasets for years
 summary(tickets)
 summary(tickets_to2014)
-summary(tickets_no_partials)
+summary(tickets)
 ```
 
 ```{r EDA of Money and Violation variables, tidy=T, message=F}
@@ -148,25 +128,23 @@ table(tickets$Violation)
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation))
   #Violations broken down by year
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge")
-  ##Without 2015
-ggplot(data = tickets_to2014) + geom_bar(mapping = aes(x = tickets_to2014$Violation, fill = as.factor(tickets_to2014$Citation.Issue.Year)), position = "dodge")
-  ##Without 2008 and 2015
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Violation, fill = as.factor(tickets_no_partials$Citation.Issue.Year)), position = "dodge")
 
 #Fine amount
 table(tickets$Fine.Amount)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Fine.Amount))
-  ##By Violation (without 2008 and 2015)
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Fine.Amount)) + facet_wrap(~ tickets_no_partials$Violation)
+fine.plot <- ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Fine.Amount))
+fine.plot
+  ##By Violation
+fine.plot + facet_wrap(~ tickets$Violation)
   ## It is clear that tickets have a low fine amount and high fine amount. Is it time of day, weekday vs weekend, year, etc.?
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Fine.Amount, fill = as.factor(tickets_no_partials$Citation.Issue.Year)), position = "fill") + facet_wrap(~tickets_no_partials$Violation)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Fine.Amount, fill = tickets$Citation.Issue.Weekday), position = 'dodge') + facet_wrap(~ tickets$Violation)
+#ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Fine.Amount, fill = as.factor(tickets$Citation.Issue.Year)), position = "fill") + facet_wrap(~tickets$Violation)
 
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Fine.Amount, fill = tickets_no_partials$Citation.Issue.Weekday), position = "fill") + facet_wrap(~tickets_no_partials$Violation)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Fine.Amount, fill = tickets$Citation.Issue.Weekday), position = "fill") + facet_wrap(~tickets$Violation)
 
 
 #Citation Status
-table(tickets_no_partials$Citation.Status)
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Citation.Status))
+table(tickets$Citation.Status)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Status))
 
 #Amount paid
 table(tickets$Amount.Paid)
@@ -192,12 +170,9 @@ summary(tickets_due_status)
 ggplot(data = tickets_due_status) + geom_histogram(mapping = aes(x = tickets$Amount.Due, fill = tickets$Citation.Status))
   #That seems to tell the whole story
 
-
 #Paid on time
 table(tickets$Paid.On.Time)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Paid.On.Time))
-
-
+ggplot(data = tickets) + geom_bar(mapping = aes(x = as.factor(tickets$Paid.On.Time)))
 
 ```
 
@@ -212,13 +187,13 @@ ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation))
   #Violations broken down by year
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge")
   #No partial years
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Violation, fill = as.factor(tickets_no_partials$Citation.Issue.Year)), position = "dodge")
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge")
 
 #Because the distribution of fine amount has several high-end outliers, we should be using the median as our measure of central tendency. This is even more clear when comparing the difference between the mean and median (112.7 and 85). 
 median(tickets$Fine.Amount)
 mean(tickets$Fine.Amount)
-median(tickets_no_partials$Fine.Amount)
-mean(tickets_no_partials$Fine.Amount)
+median(tickets$Fine.Amount)
+mean(tickets$Fine.Amount)
 
 # find the median fine amount by violation
 fine_by_viol <- tickets %>% 
@@ -259,3 +234,181 @@ fine.plot.yv
 
 ##Are more citations issued on certain days of the week? Are more tickets issued on weekdays than weekends?
 
+#Jack EDA
+
+```{r Violation Type per Hour}
+# Proportion of Violation Type per Hour
+
+Tickets.per.Hour <- tickets %>% group_by(Citation.Issue.Hour) %>% summarise(count = n())
+Tickets.per.Hour
+
+ggplot(tickets, aes(x = Citation.Issue.Hour, fill = Violation)) + geom_bar(position = "fill") + scale_x_continuous(breaks = seq(0, 24, 1)) 
+
+# Graph shows almost entirely Double Parking and Bus Zone Violations during non-rush-hour  and almost entirely Towaway and Prohibited Parking during rush hour
+```
+
+```{r Distribution of each Violation Type over Day}
+#Distributions of each Violation Type over Course of a Day
+
+ggplot(tickets, aes(x = Citation.Issue.Hour)) + geom_histogram(fill = "red", color = "black") + facet_wrap(~Violation)
+
+```
+
+```{r Cost Change of Each Violation Type over Hour, Day, Month, and Year}
+# These graphs show how Fine Amount changes over each hour, day of the week, month, and year for each Violation Type
+
+ggplot(tickets, aes(x = Citation.Issue.Hour, y = Fine.Amount)) + geom_point() + facet_wrap(~Violation)
+
+ggplot(tickets, aes(x = Citation.Issue.DayOfWeek, y = Fine.Amount)) + geom_point() + facet_wrap(~Violation)
+
+ggplot(tickets, aes(x = Citation.Issue.Month, y = Fine.Amount)) + geom_point() + facet_wrap(~Violation)
+
+ggplot(tickets, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + facet_wrap(~Violation)
+
+# There are appears to be no change over Hour, Day, or Month with a slight increase in prices each year, with a larger spike in 2012. 
+```
+
+```{r Cost of six main violations over Year}
+#Analysis of price changes over the years by Violation type
+
+#Total of each type of Violation
+ViolationCount <- tickets %>% group_by(Violation) %>% summarise(count = n())
+ViolationCount
+
+#Create objects for each type of Violation
+Violation.DBLPRK <- tickets %>% filter(Violation == "DBL PARK")
+Violation.BUSZONE <- tickets %>% filter(Violation == "BUS ZONE")
+Violation.PKPHBOTD <- tickets %>% filter(Violation == "PK PHB OTD")
+Violation.PRKPROHIB <- tickets %>% filter(Violation == "PRK PROHIB")
+Violation.TOWAWAY1 <- tickets %>% filter(Violation == "TWAWY ZN#1")
+Violation.TOWAWAYzONE <- tickets %>% filter(Violation == "TWAWY ZONE")
+
+#Graphing the change in fine for each Violation type from 2010-2015
+
+ggplot(Violation.DBLPRK, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Double Parking")
+
+ggplot(Violation.BUSZONE, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Bus Zone")
+
+ggplot(Violation.PKPHBOTD, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Tow-Away Zone - Outside Downtown Core")
+
+ggplot(Violation.PRKPROHIB, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Tow-Away Zone - Downtown Core")
+
+ggplot(Violation.TOWAWAY1, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Tow Away Zone 1")
+
+ggplot(Violation.TOWAWAYzONE, aes(x = Citation.Issue.Year, y = Fine.Amount)) + geom_point() + labs(title = "Tow Away Zone 2")
+
+#General increases in fines over the interval with a noticable jump in prices in 2012
+```
+
+
+## What Hours have the most Violations
+
+```{r Histogram of Citations per Hour, tidy = T}
+# Histogram of Citations per Hour
+ByHour <- tickets %>% group_by(Citation.Issue.Hour) %>% summarise(Percentage = round(n()/nrow(tickets) * 100, digits = 5))
+ByHour
+
+ggplot(tickets, aes(x = Citation.Issue.Hour)) + geom_histogram(binwidth = 1, fill = "red", color = "black") + scale_x_continuous(breaks = seq(0, 24, 1)) 
+```
+
+## Are more tickets issued during Rush Hour or Off Hours
+
+```{r}
+#Created variable Day of Month for purposes of day-to-day calculations
+tickets$Citation.Issue.Day <- day(tickets$Citation.Issue.Date)
+
+
+RushHour <- tickets %>% filter((Citation.Issue.Hour >= 7 & Citation.Issue.Hour <= 9) | (Citation.Issue.Hour >= 16 & Citation.Issue.Hour <= 18))
+NonRushHour <- tickets %>% filter((Citation.Issue.Hour < 7 | Citation.Issue.Hour > 9) & (Citation.Issue.Hour < 16 | Citation.Issue.Hour > 18))
+nrow(RushHour)
+nrow(NonRushHour)
+PercentRush <- nrow(RushHour) / nrow(tickets) * 100
+PercentRush
+```
+
+```{r}
+t <- tickets %>% group_by(Citation.Issue.Date) %>% summarise(median = median(Fine.Amount))
+median(t$median)
+
+g <- tickets %>% group_by(Citation.Issue.DayOfWeek) %>% summarise(median = median(Fine.Amount))
+g
+
+```
+
+
+## Comparing Distributions of Rush Hour and Off Hour Totals per Day 
+
+```{r EDA for Rushhour and NonRushhour}
+#EDA for Rushhour vs NonRushhour
+dim(RushHour)
+str(RushHour)
+nrow(RushHour)
+head(RushHour)
+
+#Calculate total Rushhour violations for each day
+Rush <- RushHour %>% group_by(Citation.Issue.Day, Citation.Issue.Month, Citation.Issue.Year) %>% summarise(count = n())
+RushTotals <- Rush$count
+
+#EDA of Statistics of Rushhour
+mean(RushTotals)
+median(RushTotals)
+var(RushTotals)
+sd(RushTotals)
+quantile(RushTotals, c(0, .1, .2, .3, .4, .5, .6, .7, .8, .9, .95, 1))
+shapiro.test(RushTotals)
+
+#EDA Graphs for Rushhour
+qqnorm(RushTotals)
+qqline(RushTotals)
+
+boxplot(RushTotals)
+
+plot(RushTotals, dbinom(RushTotals, 30, 0.25), type = "h")
+
+#EDA of NonRushhour
+str(NonRushHour)
+dim(NonRushHour)
+nrow(NonRushHour)
+
+NonRush <- NonRushHour %>% group_by(Citation.Issue.Day, Citation.Issue.Month, Citation.Issue.Year) %>% summarise(count = n())
+NonRushTotals <- NonRush$count
+
+mean(NonRushTotals)
+median(NonRushTotals)
+sd(NonRushTotals)
+var(NonRushTotals)
+quantile(NonRushTotals, c(0, .1, .2, .3, .4, .5, .6, .7, .8, .9, .95, 1))
+shapiro.test(NonRushTotals)
+qqnorm(NonRushTotals)
+qqline(NonRushTotals)
+
+boxplot(NonRushTotals)
+
+ggplot(Rush, aes(x = count)) + geom_histogram(binwidth = 1, fill = "red", color = "black") + scale_x_continuous(breaks = seq(0, 130, 10)) + geom_histogram(data = NonRush, aes(x = count), binwidth = 1, fill = "blue", color = "black", alpha = 0.7) + scale_x_continuous(breaks = seq(0, 130, 10)) 
+
+plot(NonRushTotals, dbinom(NonRushTotals, 30, 0.25), type = "h")
+
+```
+
+## What Violations occur more during Rush Hour and what occur more during Off Hours?
+
+```{r Violation Type per Hour}
+# Proportion of Violation Type per Hour
+
+Tickets.per.Hour <- tickets %>% group_by(Citation.Issue.Hour) %>% summarise(count = n())
+Tickets.per.Hour
+
+ggplot(tickets, aes(x = Citation.Issue.Hour, fill = Violation)) + geom_bar(position = "fill") + scale_x_continuous(breaks = seq(0, 24, 1)) 
+
+# Graph shows almost entirely Double Parking and Bus Zone Violations during non-rush-hour  and almost entirely Towaway and Prohibited Parking during rush hour
+
+Violation.Rush <- RushHour %>% group_by(Violation) %>% summarise(Total_During_Rush = n())
+Violation.Rush
+
+Violation.Off <- NonRushHour %>% group_by(Violation) %>% summarise(Total_During_Off = n())
+Violation.Off
+
+a <- Violation.Rush$Total_During_Rush / (Violation.Rush$Total_During_Rush + Violation.Off$Total_During_Off)
+round(a, 3)
+
+```
