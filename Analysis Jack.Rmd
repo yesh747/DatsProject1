@@ -27,7 +27,7 @@ getwd()
 tickets <- read.csv('tickets.csv', header=T)
 ```
 
-# # Analysis of Daily Revenues
+## Analysis of Daily Revenues
 
 ```{r Analysis Means}
 #Create the week variable
@@ -65,7 +65,7 @@ ggplot(DailyTotals, aes(x = Total)) +
 
 ```
 
-# # Analysis of Weekly Revenues
+## Analysis of Weekly Revenues
 
 ```{r}
 
@@ -98,7 +98,7 @@ sd.Week
 
 ```
 
-# # Analysis of Monthly Revenues
+## Analysis of Monthly Revenues
 
 ```{r Monthly Revenue}
 #Monthly Analysis
