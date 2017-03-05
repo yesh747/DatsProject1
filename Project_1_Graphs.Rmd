@@ -173,6 +173,8 @@ table(tickets$Violation)
   #Recode factor varibale without the Null categories
 levels(tickets$Violation) <- list("BUS ZONE" = "BUS ZONE", "DBL PARK" = "DBL PARK", "PK PHB OTD" = "PK PHB OTD", "PRK PROHIB" = "PRK PROHIB", "TWAWY ZN#1" = "TWAWY ZN#1", "TWAWY ZONE" = "TWAWY ZONE")
 
+
+
 # Create neighborhood column using Lat/Long and Census Block Data from shp file
 ## Thanks to Shekeine for instructions: http://stackoverflow.com/questions/29872109/binning-longitude-latitude-labeled-data-by-census-block-id
 ## Load Census tract data for San Fransisco
@@ -189,11 +191,11 @@ levels(tickets$Violation) <- list("BUS ZONE" = "BUS ZONE", "DBL PARK" = "DBL PAR
     * We determined "Unapplied" citations are outside the scope of this project
     * This only led to 84 observations being dropped
 * Dropping extraneous variables did not affect the number of observations in the dataset
-* We dropped Violations where the listed violation was determined to be "No Violation"
-    * This led to 1 observation being dropped
+* We dropped Violations where the listed violation was determined to be "No Violation" or occured less than or equal to 70 times
+    * This led to 78 observation being dropped
     * It is worth noting that only 1 violation was deemed not to be a violation
 
-Overall, we dropped 106 of the original 17,178 observations in the dataset. This only accounts for `r round((106/17178)*100,2)` percent of the dataset. Thus, we are confident that we did not introduce any inherent biases to the data by dropping the aforementioned observations. 
+Overall, we dropped `r 78 + 84 + 21` of the original 17,178 observations in the dataset. This only accounts for `r round(((78 + 84 + 21)/17178)*100,2)` percent of the dataset. Thus, we are confident that we did not introduce any inherent biases to the data by dropping the aforementioned observations. 
 
 ##Cleaned Dataset
 
@@ -211,12 +213,71 @@ After cleaning the dataset to begin exploratory data anlysis, there are `r NROW(
 
 # Mike EDA 
 
+```{r General EDA of variables, tidy=T, message=F}
+#Bar chart of Violations
+summary(tickets$Violation)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation))
+
+  #Violations broken down by year
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge")
+
+#Fine amount
+summary(tickets$Fine.Amount)
+table(tickets$Fine.Amount)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Fine.Amount))
+
+#Citation Status
+summary(tickets$Citation.Status)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Status))
+
+#Amount paid
+summary(tickets$Amount.Paid)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Amount.Paid))
+  #Why are some amounts paid so low? Are these cases where status is open still? 
+tickets_by_paid_status <- tickets %>% group_by(Amount.Paid, Citation.Status) 
+summary(tickets_by_paid_status)
+ggplot(data = tickets_by_paid_status) + geom_bar(mapping = aes(x = tickets$Amount.Paid, fill = tickets$Citation.Status))
+  #Most of these ones are still open but it still doesn't make sense
+  #What types of violations are these????
+tickets_paid_viol <- tickets %>% group_by(Amount.Paid, Violation)
+ggplot(data = tickets_paid_viol) + geom_bar(mapping = aes(x = tickets$Amount.Paid, fill = tickets$Violation))
+  #Looks like prices of violations vary. By time? Weekend? 
+
+#Amount Due
+summary(tickets$Amount.Due)
+ggplot(data = tickets) + geom_histogram(mapping = aes(x = tickets$Amount.Due, fill = tickets$Violation))
+  ##The vast majority of tickets are fully paid off
+head(table(tickets$Amount.Due)) 
+  ##By citations status?
+tickets_due_status <- tickets %>% group_by(Amount.Due, Citation.Status)
+summary(tickets_due_status)
+ggplot(data = tickets_due_status) + geom_histogram(mapping = aes(x = tickets$Amount.Due, fill = tickets$Citation.Status))
+  #That seems to tell the whole story
+
+#Paid on time
+summary(tickets$Paid.On.Time)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Paid.On.Time))
+
+# Month
+table(tickets$Citation.Issue.Month)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Month))
+
+
+
+
+
+```
+
+
 ##How have the prices of TOLE violations changed over time?
 
 ```{r prices change over time EDA, tidy=T, message=F}
 #summary stats and histogram of fine amount
-summary(tickets$Fine.Amount)
-hist(tickets$Fine.Amount)
+summary(tickets$Violation)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation))
+
+  #Violations broken down by year
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge")
 
 #Because the distribution of fine amount has several high-end outliers, we should be using the median as our measure of central tendency. This is even more clear when comparing the difference between the mean and median (112.7 and 85). 
 median(tickets$Fine.Amount)
