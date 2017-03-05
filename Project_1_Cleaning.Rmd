@@ -212,5 +212,5 @@ After cleaning the dataset to begin exploratory data anlysis, there are `r NROW(
 
 ```{r, results='hide', tidy=T}
 #Save cleaned dataset as tickets.csv
-write.csv(tickets, file = "tickets.csv")
+write.csv(tickets, file = "tickets.csv", row.names = FALSE)
 ```
