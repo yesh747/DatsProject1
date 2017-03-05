@@ -69,7 +69,7 @@ rm(p, tickets.violWeekday)
 
 ##For the top 3 violations, what hours are most ticketed? 
 ```{r violations4, tidy=T, message=FALSE, echo=FALSE}
-#Figure out which ciolations are top 3 types
+#Figure out which violation types are top 3 most common
 ViolCount <- tickets %>% group_by(Violation) %>% summarise(freq=n())
 topViol <- ViolCount[order(-ViolCount$freq),]
 topViol <- topViol[1:3,]
@@ -77,23 +77,20 @@ topViol <- topViol[1:3,]
 tickets.topViol <- subset(tickets, tickets$Violation == topViol$Violation[1] | tickets$Violation == topViol$Violation[2] | tickets$Violation == topViol$Violation[3])
   ##Rename column
 tickets.topViol <- rename(tickets.topViol, Top.3.Violations = Violation)
-  ##Plot top 3 violations by issue hour
+ ##Plot top 3 violations by issue hour
 p1 <- ggplot(tickets.topViol, aes(Citation.Issue.Hour, fill=Top.3.Violations))
 p1 + geom_density(alpha = .6)
-#Plot all violations by hour; NOTE: This is not very helpful
-p2 <- ggplot(tickets, aes(Citation.Issue.Hour, fill = Violation))
-p2 + geom_density(alpha = .6)
+
+table(tickets.topViol$Citation.Issue.Hour)
 ```
 
-# Yesh EDA
+##For the top 3 violations, what is the usual amount paid?
 
-## Which fees get the most tickets for the top 3 violation types?
 ```{r violations5, tidy=T, message=FALSE, echo=FALSE}
-
-
 p2 <- ggplot(tickets.topViol, aes(Amount.Paid, fill=Top.3.Violations))
 p2 + geom_density(alpha = .6)
 
+#Remove from workspace
 rm(p1, p2, topViol, ViolCount, tickets.topViol)
 ```
 
