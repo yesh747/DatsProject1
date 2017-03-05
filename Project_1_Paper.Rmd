@@ -5,7 +5,7 @@ date: "March 5, 2017"
 output: pdf_document
 ---
 
-```{r loadData <- t}
+```{r loadData, include =FALSE}
 
 rawTickets <- data.frame(read.csv('Muni_Driver_Reported_Transit_Only_Lane_Violations.csv', header = T, sep = ","))
 tickets <- read.csv("tickets.csv")
@@ -47,10 +47,29 @@ The raw dataset contains the following variables regarding the transit-only lane
 * `Geom` -- The latitude and longitude (latitutde, longitude) of the traffic only lane violation 
 
 
-## 
+## Limitations of Dataset and Data Cleaning
+* Basically what's wrong and how we got around that by cleaning data
+* Introduce new variables we created
 
+## Prior Exeternal Analysis Related to Content of Dataset
+  * information from "Description_of_TOLE_Program.pdf"
+  * inforamtion from bill Jack mentioned about EDA 
+  
+## Background Research & Broad Questions
+  * Research on program from "Description_of_TOLE_Program.pdf"
+  * Introduce 3 "Broad Questions"
+
+## EDA & SMART Question
+  * Show EDA
+  * Show refinement into SMART Questions
+
+## Answering the SMART Question
+  * 
 
 # NOTES:
+  * 
 
 # TO-DO: 
+  * CITATIONS!!!!!!!!!!!!!!!!!!!!
+  * add summary stats/dimensions to the background of the dataset
   * something about Bills - ask Jack
