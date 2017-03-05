@@ -122,8 +122,8 @@ ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Hour)
 
 #Summary stats for the different tickets datasets for years
 summary(tickets)
-summary(tickets_to2014)
-summary(tickets)
+# summary(tickets_to2014)
+# summary(tickets)
 ```
 
 ```{r EDA of Money and Violation variables, tidy=T, message=F}
