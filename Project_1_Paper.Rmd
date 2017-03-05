@@ -5,7 +5,7 @@ date: "March 5, 2017"
 output: pdf_document
 ---
 
-```{r loadData <- t}
+```{r loadData, include =FALSE}
 
 rawTickets <- data.frame(read.csv('Muni_Driver_Reported_Transit_Only_Lane_Violations.csv', header = T, sep = ","))
 tickets <- read.csv("tickets.csv")
@@ -25,7 +25,7 @@ San Fransico currently operates 26 miles transit-only lanes with 160,000 daily p
 
 ## Background on dataset
 
-The raw dataset contains the following variables regarding the transit-only lane violations:
+The unit of observation was an individual citation for a transit-only lane violation reported by municipal drivers under the TOLE program, and the raw dataset contains the following variables regarding the transit-only lane violations:
 
 * `Object.ID` -- Unique key that corresponds to each observation
 * `Ticket.Number` -- Unique number that corresponds to each ticket catalogued with the Superior Court of San Francisco
@@ -34,7 +34,7 @@ The raw dataset contains the following variables regarding the transit-only lane
 * `Citation.Issue.Time` -- The time of day (HH:MM) PST that the traffic only lane violation citation was issued
 * `Location` -- The street address where the traffic only lane violation citation was issued
 * `Violation.Code` -- A code that corresponds to the type of traffic only lane violation that was committed to warrant issuing a citation
-* `Violation` -- Description of the traffic only lane violation issued in the citation
+* `Violations` -- Description of the traffic only lane violation issued in the citation
 * `Fine.Amount` -- The dollar amount of to be paid for the traffic only lane violation
 * `Citation.Status` -- Status of the citation (Open, Closed, Unapplied)
 * `Amount.Paid` -- The dollar amount paid for the traffic only lane violation
@@ -47,12 +47,33 @@ The raw dataset contains the following variables regarding the transit-only lane
 * `Geom` -- The latitude and longitude (latitutde, longitude) of the traffic only lane violation 
 
 
-## 
+## Limitations of Dataset and Data Cleaning
 
+The limitations of the data include the timing of the implementation of the video camera citation system. While SFMTA claims 100% of their buses are equiped with cameras, they fail to indicate if the 100% implemention was at the start or end of the program. We believe there was a trial period, so we decided to drop variables in 2008 when the program first started because there were only 154 citations issued that year, while typically several thousand citations in the following years. In addition our dataset lacked demographic controls for the regions where citations were issued. This means demographic factors could cause unobserved biases in our data. While out of the scope of this initial analysis, future analysis can map the `Geom` variables in the dataset to census tracts to derive demographic information. 
+
+Some observations were missing key data. We decided to drop all oberssations with no `Geom` data, so that future geospatial and demographic analysis could be done (12 observations). We dropped all observations where `Citation.Status` was not specificied or "unapplied", as we determined "unapplied" was out of the scope of this project (84 observations). We dropped `Violations` where the listed violation was determined to be "No Violation" (1 observation) or occured less than or equal to 70 times (77 observations). We also dropped citations in the year 2015 to avoid biases in monthly and yearly analysis because only 2 months were included for 2015.
+
+Overall, we dropped `r 191 + 78 + 84 + 21` of the original 17,178 observations in the dataset. This only accounts for `r round(((191 + 78 + 84 + 21)/17178)*100,2)` percent of the dataset. Thus, we are confident that we did not introduce any inherent biases to the data by dropping the aforementioned observations. 
+
+## Prior Exeternal Analysis Related to Content of Dataset
+  * information from "Description_of_TOLE_Program.pdf"
+  * inforamtion from bill Jack mentioned about EDA 
+  
+## Background Research & Broad Questions
+  * Research on program from "Description_of_TOLE_Program.pdf"
+  * Introduce 3 "Broad Questions"
+
+## EDA & SMART Question
+  * Show EDA
+  * Show refinement into SMART Questions
+
+## Answering the SMART Question
+  * 
 
 # NOTES:
+  * 
 
 # TO-DO: 
-  * something about Bills - ask Jack'
+  * CITATIONS!!!!!!!!!!!!!!!!!!!!
+  * add summary stats/dimensions to the background of the dataset
   * Bill introduced in 2007, reevaluated in 2011, made permanent in 2015
-  
