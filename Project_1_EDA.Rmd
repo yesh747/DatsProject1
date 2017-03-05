@@ -31,14 +31,14 @@ tickets <- data.frame(read.csv("tickets.csv", header=T, sep=','))
 #Violations
 
 ##What TOLE violations are most common?
-```{r Violations, tidy=T, message=FALSE, echo=FALSE}
+```{r Most common violations, tidy=T, message=FALSE, echo=FALSE}
 table(tickets$Violation)
 #Plot violations by count 
 ggplot(data=tickets, aes(Violation)) + geom_bar() + coord_flip() + geom_text(stat="count", aes(label=..count..))
 ```
 
 ##What TOLE violations produce the most revenue?
-```{r Violations2, tidy=T, message=FALSE, echo=FALSE}
+```{r violations most revenue, tidy=T, message=FALSE, echo=FALSE}
 #Create Total Revenue variable for each violation
 tickets.violation <- aggregate(tickets[,c("Amount.Paid")], by=list(tickets$Violation), FUN=sum)
 tickets.violation <- rename(tickets.violation, Violation = Group.1, Total.Revenue = x)
@@ -51,7 +51,7 @@ rm(tickets.violation)
 ```
 
 ###What TOLE Violations produce the most revenue on weekends and weekdays?
-```{r Violations3, tidy=T, message=FALSE, echo=FALSE}
+```{r violations most revenue on weekends/weekdays, tidy=T, message=FALSE, echo=FALSE}
 #Create variable that store sum of apount paid by violation and weekday 
 tickets.violWeekday <- aggregate(tickets[,c("Amount.Paid")], by=list(tickets$Violation, tickets$Citation.Issue.Weekday), FUN=sum)
   ##Rename the columns of tickets.violWeekday
@@ -68,7 +68,7 @@ rm(p, tickets.violWeekday)
 ```
 
 ##For the top 3 violations, what hours are most ticketed? 
-```{r Violations4, tidy=T, message=FALSE, echo=FALSE}
+```{r top 3 violations most ticketed, tidy=T, message=FALSE, echo=FALSE}
 #Figure out which violation types are top 3 most common
 ViolCount <- tickets %>% group_by(Violation) %>% summarise(freq=n())
 topViol <- ViolCount[order(-ViolCount$freq),]
@@ -86,7 +86,7 @@ table(tickets.topViol$Citation.Issue.Hour)
 
 ##For the top 3 violations, what is the usual amount paid?
 
-```{r Violations5, tidy=T, message=FALSE, echo=FALSE}
+```{r top 3 violations amount paid, tidy=T, message=FALSE, echo=FALSE}
 p2 <- ggplot(tickets.topViol, aes(Amount.Paid, fill=Top.3.Violations))
 p2 + geom_density(alpha = .6)
 
@@ -96,7 +96,7 @@ rm(p1, p2, topViol, ViolCount, tickets.topViol)
 
 ##Do TOLE violations vary by hour of the day? 
 
-```{r Violation Type per Hour, tidy=T, message=F}
+```{r Violations by hour, tidy=T, message=F}
 #Dataframe for number of violations by Hour
 Tickets.per.Hour <- tickets %>% group_by(Citation.Issue.Hour) %>% summarise(count = n())
 Tickets.per.Hour
@@ -105,44 +105,25 @@ ggplot(tickets, aes(x = Citation.Issue.Hour, fill = Violation)) + geom_bar(posit
 # NOTE: The graph shows almost entirely Double Parking and Bus Zone Violations during non-rush-hour and almost entirely Towaway and Prohibited Parking during rush hour
 ```
 
-# Mike EDA 
-
-```{r EDA of Time variables, tidy=T, message=F}
-# Month
-table(tickets$Citation.Issue.Month)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Month))
-
-# Year
-table(tickets$Citation.Issue.Year)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Year))
-
-# Day of Week 
-table(tickets$Citation.Issue.DayOfWeek)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.DayOfWeek))
-# ******* Let's look at how we coded the Day of Week variable. This trend shoud be lower on Sunday ******
-
-# Weekday
-table(tickets$Citation.Issue.Weekday)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Weekday))
-# ******* Let's look at how we coded the Day of Week variable. This trend shoud be lower on Sunday ******
-
-#Hour 
-table(tickets$Citation.Issue.Hour)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Hour))
-# People are getting boned during rush hour on the way home
-
-#Summary stats for the different tickets datasets for years
-summary(tickets)
-# summary(tickets_to2014)
-# summary(tickets)
+```{r Distribution of each Violation by type and hour, tidy=T, message=F, }
+#Distribution of Violation by type and hour of day
+ggplot(tickets, aes(x = Citation.Issue.Hour)) + geom_histogram(fill = "red", color = "black") + facet_wrap(~Violation)
 ```
+
+##Do TOLE violations vary by year? 
+
+```{r Violations by year}
+
+```
+
+
+# Mike EDA 
 
 ```{r EDA of Money and Violation variables, tidy=T, message=F}
 #Violations
-table(tickets$Violation)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation))
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation)) + coord_flip()
   #Violations broken down by year
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge")
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge") + coord_flip()
 
 #Fine amount
 table(tickets$Fine.Amount)
@@ -189,6 +170,37 @@ ggplot(data = tickets_due_status) + geom_histogram(mapping = aes(x = tickets$Amo
 table(tickets$Paid.On.Time)
 ggplot(data = tickets) + geom_bar(mapping = aes(x = as.factor(tickets$Paid.On.Time)))
 
+```
+
+
+```{r EDA of Time variables, tidy=T, message=F}
+# Month
+table(tickets$Citation.Issue.Month)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Month))
+
+# Year
+table(tickets$Citation.Issue.Year)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Year))
+
+# Day of Week 
+table(tickets$Citation.Issue.DayOfWeek)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.DayOfWeek))
+# ******* Let's look at how we coded the Day of Week variable. This trend shoud be lower on Sunday ******
+
+# Weekday
+table(tickets$Citation.Issue.Weekday)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Weekday))
+# ******* Let's look at how we coded the Day of Week variable. This trend shoud be lower on Sunday ******
+
+#Hour 
+table(tickets$Citation.Issue.Hour)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Hour))
+# People are getting boned during rush hour on the way home
+
+#Summary stats for the different tickets datasets for years
+summary(tickets)
+# summary(tickets_to2014)
+# summary(tickets)
 ```
 
 ##How have the prices of TOLE violations changed over time?
@@ -245,19 +257,10 @@ fine.plot.yv
 
 ```
 
-
 ##Are more citations issued on certain days of the week? Are more tickets issued on weekdays than weekends?
 
 #Jack EDA
 
-
-
-```{r Distribution of each Violation Type over Day}
-#Distributions of each Violation Type over Course of a Day
-
-ggplot(tickets, aes(x = Citation.Issue.Hour)) + geom_histogram(fill = "red", color = "black") + facet_wrap(~Violation)
-
-```
 
 ```{r Cost Change of Each Violation Type over Hour, Day, Month, and Year}
 # These graphs show how Fine Amount changes over each hour, day of the week, month, and year for each Violation Type
