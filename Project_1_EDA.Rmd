@@ -59,7 +59,6 @@ rm(tickets.violation)
 tickets.violWeekday <- aggregate(tickets[,c("Amount.Paid")], by=list(tickets$Violation, tickets$Citation.Issue.Weekday), FUN=sum)
 tickets.violWeekday <- rename(tickets.violWeekday, Violation = Group.1, Weekday = Group.2, Total.Revenue = x)
 tickets.violWeekday$Daily.Average.Revenue <- ifelse(tickets.violWeekday$Weekday == 1, tickets.violWeekday$Total.Revenue/5, tickets.violWeekday$Total.Revenue/2)
-tickets.violWeekday$Weekday <- ifelse(tickets.violWeekday$Weekday == 0, "Weekend", "Weekday")
 
 p <- ggplot(tickets.violWeekday, aes(x=Violation, y=Daily.Average.Revenue, fill=Weekday))
 p + geom_bar(stat="identity") + coord_flip()
@@ -123,8 +122,8 @@ ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Hour)
 
 #Summary stats for the different tickets datasets for years
 summary(tickets)
-summary(tickets_to2014)
-summary(tickets)
+# summary(tickets_to2014)
+# summary(tickets)
 ```
 
 ```{r EDA of Money and Violation variables, tidy=T, message=F}
