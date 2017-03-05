@@ -275,6 +275,7 @@ ggplot(tickets, aes(x = Citation.Issue.Hour)) + geom_histogram(binwidth = 1, fil
 #Created variable Day of Month for purposes of day-to-day calculations
 tickets$Citation.Issue.Day <- day(tickets$Citation.Issue.Date)
 
+
 RushHour <- tickets %>% filter((Citation.Issue.Hour >= 7 & Citation.Issue.Hour <= 9) | (Citation.Issue.Hour >= 16 & Citation.Issue.Hour <= 18))
 NonRushHour <- tickets %>% filter((Citation.Issue.Hour < 7 | Citation.Issue.Hour > 9) & (Citation.Issue.Hour < 16 | Citation.Issue.Hour > 18))
 nrow(RushHour)
@@ -282,6 +283,16 @@ nrow(NonRushHour)
 PercentRush <- nrow(RushHour) / nrow(tickets) * 100
 PercentRush
 ```
+
+```{r}
+t <- tickets %>% group_by(Citation.Issue.Date) %>% summarise(median = median(Fine.Amount))
+median(t$median)
+
+g <- tickets %>% group_by(Citation.Issue.DayOfWeek) %>% summarise(median = median(Fine.Amount))
+g
+
+```
+
 
 # # Comparing Distributions of Rush Hour and Off Hour Totals per Day 
 
@@ -310,8 +321,6 @@ qqline(RushTotals)
 
 boxplot(RushTotals)
 
-ggplot(Rush, aes(x = count)) + geom_histogram(binwidth = 2, fill = "red", color = "black") + scale_x_continuous(breaks = seq(0, 130, 10))
-
 plot(RushTotals, dbinom(RushTotals, 30, 0.25), type = "h")
 
 #EDA of NonRushhour
@@ -333,7 +342,7 @@ qqline(NonRushTotals)
 
 boxplot(NonRushTotals)
 
-ggplot(NonRush, aes(x = count)) + geom_histogram(binwidth = 1, fill = "red", color = "black") + scale_x_continuous(breaks = seq(0, 130, 10))
+ggplot(Rush, aes(x = count)) + geom_histogram(binwidth = 1, fill = "red", color = "black") + scale_x_continuous(breaks = seq(0, 130, 10)) + geom_histogram(data = NonRush, aes(x = count), binwidth = 1, fill = "blue", color = "black", alpha = 0.7) + scale_x_continuous(breaks = seq(0, 130, 10)) 
 
 plot(NonRushTotals, dbinom(NonRushTotals, 30, 0.25), type = "h")
 
@@ -362,90 +371,155 @@ round(a, 3)
 
 ```
 
+# # Analysis of Daily Revenues
+
+```{r Analysis Means}
+#Create the week variable
+dateRange <- c(tickets$Citation.Issue.Date) 
+x <- as.POSIXlt(dateRange) 
+tickets$Citation.Issue.Week <- strftime(x,format="%W")
+
+#Daily Analysis
+DailyTotals<- tickets %>% group_by(Citation.Issue.Date) %>% summarise(Total = sum(Amount.Paid))
+
+head(DailyTotals)
+
+AverageDay <- mean(DailyTotals$Total)
+AverageDay
+
+MedianDay <- median(DailyTotals$Total)
+MedianDay
+
+Daily <- DailyTotals$Total
+
+var(Daily)
+sd(Daily)
+quantile(Daily, c(.1, .3, .5, .7, .9))
+shapiro.test(Daily)
+
+#EDA Graphs for Rushhour
+qqnorm(Daily)
+qqline(Daily)
 
 
-```{r Analysis of Paid.On.Time by Violation Type}
-#EDA on Paid.on.Time by Violation Type
-
-PaidTimeMonthly <- tickets %>% group_by(Citation.Issue.Month,Citation.Issue.Year) %>% summarise(Total = n(), PaidProportion = mean(Paid.On.Time))
-
-PaidTimeMonthly1 <- PaidTimeMonthly$PaidProportion
-
-str(PaidTimeMonthly)
-dim(PaidTimeMonthly)
-nrow(PaidTimeMonthly)
-
-mean(PaidTimeMonthly1)
-median(PaidTimeMonthly1)
-sd(PaidTimeMonthly1)
-var(PaidTimeMonthly1)
-quantile(PaidTimeMonthly1, c(0, .1, .2, .3, .4, .5, .6, .7, .8, .9, .95, 1))
-shapiro.test(PaidTimeMonthly1)
-qqnorm(PaidTimeMonthly1)
-qqline(PaidTimeMonthly1)
-
-boxplot(PaidTimeMonthly1)
-
-hist(PaidTimeMonthly1, breaks = c(seq(0.5, 1, 0.01)))
+ggplot(DailyTotals, aes(x = Total)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="pink") + 
+  geom_density(alpha=.5, fill="red") + 
+  geom_vline(xintercept = AverageDay, linetype = "longdash", colour = "blue") + geom_vline(xintercept = MedianDay, linetype = "twodash" , colour = "green")
 
 ```
+
+# # Analysis of Weekly Revenues
+
+```{r}
+
+#Weekly Total Revenue Mean compared to each Week's Total Revenue
+#Weekly Analysis
+WeeklyTotals<- tickets %>% group_by(Citation.Issue.Week, Citation.Issue.Month, Citation.Issue.Year) %>% summarise(Total = sum(Amount.Paid))
+
+head(WeeklyTotals)
+
+mean.Weekly <- mean(WeeklyTotals$Total)
+mean.Weekly
+
+MedianWeek <- median(WeeklyTotals$Total)
+MedianWeek
+
+Weekly <- WeeklyTotals$Total
+
+var(Weekly)
+sd(Weekly)
+quantile(Weekly, c(.1, .3, .5, .7, .9))
+shapiro.test(Weekly)
+
+qqnorm(Weekly)
+qqline(Weekly)
+
+ggplot(WeeklyTotals, aes(x = Total)) + geom_histogram(aes(y = ..density..), fill = "pink", colour = "black", binwidth = 500) + geom_density(alpha=.5, fill="red") + geom_vline(xintercept = AverageWeek, linetype = "longdash", colour = "blue") + geom_vline(xintercept = MedianWeek, linetype = "twodash" , colour = "green")
+sd.Week <- sd(WeeklyTotals$Total)
+sd.Week
+
+
+```
+
+# # Analysis of Monthly Revenues
+
+```{r Monthly Revenue}
+#Monthly Analysis
+MonthlyTotals<- tickets %>% group_by(Citation.Issue.Month, Citation.Issue.Year) %>% summarise(Total = sum(Amount.Paid))
+
+head(MonthlyTotals)
+
+
+#EDA of Statistics of Monthly Revenue
+AverageMonth <- mean(MonthlyTotals$Total)
+AverageMonth
+
+MedianMonth <- median(MonthlyTotals$Total)
+MedianMonth
+
+Monthly <- MonthlyTotals$Total
+
+var(Monthly)
+sd(Monthly)
+quantile(Monthly, c(.1, .3, .5, .7, .9))
+shapiro.test(Monthly)
+
+#EDA Graphs for Rushhour
+qqnorm(Monthly)
+qqline(Monthly)
+
+
+
+ggplot(MonthlyTotals, aes(x = Total)) + geom_histogram(aes(y = ..density..), fill = "pink", colour = "black", binwidth = 2000) + geom_density(alpha=.5, fill= "red") + geom_vline(xintercept = AverageMonth, linetype = "longdash", colour = "blue") + geom_vline(xintercept = MedianMonth, linetype = "twodash" , colour = "green")
+
+```
+
+
 
 # # Is more revenue generated during rush hour or off hours on a typical day
 
 ```{r}
-a <- RushHour %>% group_by(Citation.Issue.Day, Citation.Issue.Month, Citation.Issue.Year) %>% summarise(Revenue = sum(Fine.Amount)) 
+a <- RushHour %>% group_by(Citation.Issue.Date) %>% summarise(Revenue = sum(Fine.Amount)) 
 a
 
-ggplot(a, aes(x = Revenue)) + geom_histogram(binwidth = 100, color = "black", fill = "red")
-
-b <- NonRushHour %>% group_by(Citation.Issue.Day, Citation.Issue.Month, Citation.Issue.Year) %>% summarise(Revenue = sum(Fine.Amount)) 
+b <- NonRushHour %>% group_by(Citation.Issue.Date) %>% summarise(Revenue = sum(Fine.Amount)) 
 b
 
-ggplot(b, aes(x = Revenue)) + geom_histogram(binwidth = 100, color = "black", fill = "red")
-```
-`
+ggplot(a, aes(x = Revenue)) + geom_histogram(binwidth = 100, color = "black", fill = "red") + geom_histogram(data = b, aes(x = Revenue), binnwidth = 100, color = "black", fill = "blue", alpha = 0.7)
 
+
+```
 
 ```{r}
-#Proportion of fines paid by type of Violation
-PaidOnTime <- tickets %>% group_by(Violation) %>% summarise(Total = n(), PaidProportion = mean(Paid.On.Time))
-PaidOnTime
-mean(tickets$Paid.On.Time)
-
-#Graph of proportion of paid-to-total tickets with violation type as color
-ggplot(tickets, aes(x = Paid.On.Time, fill = Violation)) + geom_histogram(binwidth = 0.5) + scale_x_continuous(breaks = seq(0, 1, 1))
-
-#Proportion of paid-to-total for each Violation type
-ggplot(tickets, aes(x = Paid.On.Time)) + geom_histogram(binwidth = 0.5) + scale_x_continuous(breaks = seq(0, 1, 1)) + facet_wrap(~Violation)
+TotalWeek <- WeeklyTotals$Total
+n.Weekly <- length(TotalWeek)
+std.error.Week <- sd.Week / sqrt(n.Weekly)
+std.error.Week
+lower.limit.Week <- mean.Weekly - (1.96 * std.error.Week)
+upper.limit.Week <- mean.Weekly + (1.96 * std.error.Week)
+lower.limit.Week
+upper.limit.Week
+```
+```{r}
+asshole <- tickets %>% group_by(Violation, Citation.Issue.Year) %>% summarise(count = n())
+asshole
 ```
 
-```{r Analysis of Paid.on.Time by each Hour, Day, Month, Year}
-#EDA on Paid on Time By Hour, Day, Month, Year
+```{r}
+ass <- tickets %>% group_by(Citation.Issue.DayOfWeek) %>% summarise(median = median(Amount.Paid))
+ass
 
-#Proportion paid-to-total fines by hour
-Paid.by.Hour <- tickets %>% group_by(Citation.Issue.Hour) %>% summarise(count = n(), Percent_Paid = mean(Paid.On.Time))
-Paid.by.Hour
+MedianPaid <- median(tickets$Amount.Paid)
 
-#Proportion paid-to-total fines by day
-Paid.by.Day <- tickets %>% group_by(Citation.Issue.DayOfWeek) %>% summarise(count = n(), Percent_Paid = mean(Paid.On.Time))
-Paid.by.Day
 
-#Proportion paid-to-total fines by month
-Paid.by.Month <- tickets %>% group_by(Citation.Issue.Month) %>% summarise(count = n(), Percent_Paid = mean(Paid.On.Time))
-Paid.by.Month
+ggplot(ass, aes(x = Citation.Issue.DayOfWeek, y = median)) + geom_bar(fill = "red", color = "black", stat='identity') + coord_flip() + geom_hline(yintercept = MedianPaid, linetype = "longdash", colour = "blue")
 
-#Proportion paid-to-total fines by year
-Paid.by.Year <- tickets %>% group_by(Citation.Issue.Year) %>% summarise(count = n(), Percent_Paid = mean(Paid.On.Time))
-Paid.by.Year
+MediansPerMonth<- tickets %>% group_by(Citation.Issue.Month, Citation.Issue.Year) %>% summarise(Median = median(Amount.Paid))
 
-#Associated graphs
-ggplot(tickets, aes(x = Paid.On.Time)) + geom_histogram(binwidth = 0.5) + scale_x_continuous(breaks = seq(0, 1, 1)) + facet_wrap(~Citation.Issue.Hour)
+MedianMonthly <- MediansPerMonth %>% unite(Date, Citation.Issue.Month, Citation.Issue.Year, sep = " ")
 
-ggplot(tickets, aes(x = Paid.On.Time)) + geom_histogram(binwidth = 0.5) + scale_x_continuous(breaks = seq(0, 1, 1)) + facet_wrap(~Citation.Issue.DayOfWeek)
+MedianMonthly <- MedianMonthly %>% filter(Median >= 50)
 
-ggplot(tickets, aes(x = Paid.On.Time)) + geom_histogram(binwidth = 0.5) + scale_x_continuous(breaks = seq(0, 1, 1)) + facet_wrap(~Citation.Issue.Month)
-
-ggplot(tickets, aes(x = Paid.On.Time)) + geom_histogram(binwidth = 0.5) + scale_x_continuous(breaks = seq(0, 1, 1)) + facet_wrap(~Citation.Issue.Year)
+ggplot(MedianMonthly, aes(x = Date, y = Median)) + geom_bar(stat = 'identity', fill = "red", colour = "black") + geom_hline(yintercept = median(tickets$Amount.Paid), linetype = "longdash", colour = "blue")
 ```
-
-

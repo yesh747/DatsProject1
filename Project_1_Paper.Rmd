@@ -1,0 +1,7 @@
+---
+title: "Project_1_Paper"
+author: "Michael Arango, Yeshwant Chillakuru, Jackson Crum"
+date: "March 5, 2017"
+output: pdf_document
+---
+

@@ -8,3 +8,69 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+----------------------------------------------------------------------
+
+# Yesh's Stuff
+## What traffic only lane violations are most common?
+```{r violations, tidy=T, message=FALSE, echo=FALSE}
+
+df <- read.csv("tickets.csv", header=TRUE)
+
+ggplot(data=df, aes(Violation)) + geom_bar() + coord_flip() + geom_text(stat="count", aes(label=..count..))
+```
+
+## What traffic lane violations make up the most revenue?
+```{r violations2, tidy=T, message=FALSE, echo=FALSE}
+
+
+df.violation <- aggregate(df[,c("Amount.Paid")], by=list(df$Violation), FUN=sum)
+df.violation <- rename(df.violation, Violation = Group.1, Total.Revenue = x)
+
+ggplot(df.violation, aes(x=Violation, y=Total.Revenue)) + geom_bar(stat="identity") + coord_flip() + geom_text(aes(label=Total.Revenue))
+
+rm(df.violation)
+
+```
+
+## What violations produce the most daily revenue on weekends and weekdays?
+```{r violations3, tidy=T, message=FALSE, echo=FALSE}
+
+df.violWeekday <- aggregate(df[,c("Amount.Paid")], by=list(df$Violation, df$Citation.Issue.Weekday), FUN=sum)
+df.violWeekday <- rename(df.violWeekday, Violation = Group.1, Weekday = Group.2, Total.Revenue = x)
+df.violWeekday$Daily.Average.Revenue <- ifelse(df.violWeekday$Weekday == 1, df.violWeekday$Total.Revenue/5, df.violWeekday$Total.Revenue/2)
+df.violWeekday$Weekday <- ifelse(df.violWeekday$Weekday == 0, "Weekend", "Weekday")
+
+p <- ggplot(df.violWeekday, aes(x=Violation, y=Daily.Average.Revenue, fill=Weekday))
+p + geom_bar(stat="identity") + coord_flip()
+
+rm(p, df.violWeekday)
+```
+
+## What times get the most tickets for the top 3 violation types?
+```{r violations4, tidy=T, message=FALSE, echo=FALSE}
+
+ViolCount <- df %>% group_by(Violation) %>% summarise(freq=n())
+topViol <- ViolCount[order(-ViolCount$freq),]
+topViol <- topViol[1:3,]
+
+
+# df.topViol <- subset(df, df$Violation == topViol[1,1] | df$Violation == topViol[2,1] | df$Violation == topViol[3,1])
+df.topViol <- subset(df, df$Violation == topViol$Violation[1] | df$Violation == topViol$Violation[2] | df$Violation == topViol$Violation[3])
+
+df.topViol <- rename(df.topViol, Top.3.Violations = Violation)
+
+p1 <- ggplot(df.topViol, aes(Citation.Issue.Hour, fill=Top.3.Violations))
+p1 + geom_density(alpha = .6)
+
+```
+
+## Which fees get the most tickets for the top 3 violation types?
+```{r violations5, tidy=T, message=FALSE, echo=FALSE}
+
+
+p2 <- ggplot(df.topViol, aes(Amount.Paid, fill=Top.3.Violations))
+p2 + geom_density(alpha = .6)
+
+rm(p1, p2, topViol, ViolCount, df.topViol)
+```
