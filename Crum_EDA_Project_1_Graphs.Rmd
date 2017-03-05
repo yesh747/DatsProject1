@@ -507,10 +507,19 @@ asshole
 ```
 
 ```{r}
-ass <- tickets %>% group_by(Citation.Issue.Year) %>% summarise(Revenue = sum(Amount.Paid))
+ass <- tickets %>% group_by(Citation.Issue.DayOfWeek) %>% summarise(median = median(Amount.Paid))
 ass
 
-ass2 <- tickets %>% group_by(Citation.Issue.Month, Citation.Issue.Year) %>% summarise(Revenue = sum(Amount.Paid))
-ass2
+MedianPaid <- median(tickets$Amount.Paid)
 
+
+ggplot(ass, aes(x = Citation.Issue.DayOfWeek, y = median)) + geom_bar(fill = "red", color = "black", stat='identity') + coord_flip() + geom_hline(yintercept = MedianPaid, linetype = "longdash", colour = "blue")
+
+MediansPerMonth<- tickets %>% group_by(Citation.Issue.Month, Citation.Issue.Year) %>% summarise(Median = median(Amount.Paid))
+
+MedianMonthly <- MediansPerMonth %>% unite(Date, Citation.Issue.Month, Citation.Issue.Year, sep = " ")
+
+MedianMonthly <- MedianMonthly %>% filter(Median >= 50)
+
+ggplot(MedianMonthly, aes(x = Date, y = Median)) + geom_bar(stat = 'identity', fill = "red", colour = "black") + geom_hline(yintercept = median(tickets$Amount.Paid), linetype = "longdash", colour = "blue")
 ```
