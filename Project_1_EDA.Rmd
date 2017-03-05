@@ -31,14 +31,14 @@ tickets <- data.frame(read.csv("tickets.csv", header=T, sep=','))
 #Violations
 
 ##What TOLE violations are most common?
-```{r violations, tidy=T, message=FALSE, echo=FALSE}
+```{r Violations, tidy=T, message=FALSE, echo=FALSE}
 table(tickets$Violation)
 #Plot violations by count 
 ggplot(data=tickets, aes(Violation)) + geom_bar() + coord_flip() + geom_text(stat="count", aes(label=..count..))
 ```
 
 ##What TOLE violations produce the most revenue?
-```{r violations2, tidy=T, message=FALSE, echo=FALSE}
+```{r Violations2, tidy=T, message=FALSE, echo=FALSE}
 #Create Total Revenue variable for each violation
 tickets.violation <- aggregate(tickets[,c("Amount.Paid")], by=list(tickets$Violation), FUN=sum)
 tickets.violation <- rename(tickets.violation, Violation = Group.1, Total.Revenue = x)
@@ -51,7 +51,7 @@ rm(tickets.violation)
 ```
 
 ###What TOLE Violations produce the most revenue on weekends and weekdays?
-```{r violations3, tidy=T, message=FALSE, echo=FALSE}
+```{r Violations3, tidy=T, message=FALSE, echo=FALSE}
 #Create variable that store sum of apount paid by violation and weekday 
 tickets.violWeekday <- aggregate(tickets[,c("Amount.Paid")], by=list(tickets$Violation, tickets$Citation.Issue.Weekday), FUN=sum)
   ##Rename the columns of tickets.violWeekday
@@ -68,7 +68,7 @@ rm(p, tickets.violWeekday)
 ```
 
 ##For the top 3 violations, what hours are most ticketed? 
-```{r violations4, tidy=T, message=FALSE, echo=FALSE}
+```{r Violations4, tidy=T, message=FALSE, echo=FALSE}
 #Figure out which violation types are top 3 most common
 ViolCount <- tickets %>% group_by(Violation) %>% summarise(freq=n())
 topViol <- ViolCount[order(-ViolCount$freq),]
@@ -86,12 +86,23 @@ table(tickets.topViol$Citation.Issue.Hour)
 
 ##For the top 3 violations, what is the usual amount paid?
 
-```{r violations5, tidy=T, message=FALSE, echo=FALSE}
+```{r Violations5, tidy=T, message=FALSE, echo=FALSE}
 p2 <- ggplot(tickets.topViol, aes(Amount.Paid, fill=Top.3.Violations))
 p2 + geom_density(alpha = .6)
 
 #Remove from workspace
 rm(p1, p2, topViol, ViolCount, tickets.topViol)
+```
+
+##Do TOLE violations vary by hour of the day?
+
+```{r Violation Type per Hour, tidy=T, message=F}
+#Dataframe for number of violations by Hour
+Tickets.per.Hour <- tickets %>% group_by(Citation.Issue.Hour) %>% summarise(count = n())
+Tickets.per.Hour
+  ##Plot violations by hour
+ggplot(tickets, aes(x = Citation.Issue.Hour, fill = Violation)) + geom_bar(position = "fill") + scale_x_continuous(breaks = seq(0, 24, 1)) 
+# Graph shows almost entirely Double Parking and Bus Zone Violations during non-rush-hour and almost entirely Towaway and Prohibited Parking during rush hour
 ```
 
 # Mike EDA 
@@ -180,7 +191,6 @@ ggplot(data = tickets) + geom_bar(mapping = aes(x = as.factor(tickets$Paid.On.Ti
 
 ```
 
-
 ##How have the prices of TOLE violations changed over time?
 
 ```{r prices change over time EDA, tidy=T, message=F}
@@ -240,16 +250,7 @@ fine.plot.yv
 
 #Jack EDA
 
-```{r Violation Type per Hour}
-# Proportion of Violation Type per Hour
 
-Tickets.per.Hour <- tickets %>% group_by(Citation.Issue.Hour) %>% summarise(count = n())
-Tickets.per.Hour
-
-ggplot(tickets, aes(x = Citation.Issue.Hour, fill = Violation)) + geom_bar(position = "fill") + scale_x_continuous(breaks = seq(0, 24, 1)) 
-
-# Graph shows almost entirely Double Parking and Bus Zone Violations during non-rush-hour  and almost entirely Towaway and Prohibited Parking during rush hour
-```
 
 ```{r Distribution of each Violation Type over Day}
 #Distributions of each Violation Type over Course of a Day
@@ -413,6 +414,6 @@ Violation.Off <- NonRushHour %>% group_by(Violation) %>% summarise(Total_During_
 Violation.Off
 
 a <- Violation.Rush$Total_During_Rush / (Violation.Rush$Total_During_Rush + Violation.Off$Total_During_Off)
-round(a, 3)
+a <- round(a, 3)
 
 ```
