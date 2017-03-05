@@ -78,68 +78,33 @@ rm(p1, p2, topViol, ViolCount, tickets.topViol)
 # Mike EDA 
 
 ```{r EDA of Time variables, tidy=T, message=F}
-
 # Month
 table(tickets$Citation.Issue.Month)
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Month))
-  ##Without 2015 
-tickets_to2014 <- filter(tickets, tickets$Citation.Issue.Year < 2015)
-table(tickets_to2014$Citation.Issue.Month)
-ggplot(data = tickets_to2014) + geom_bar(mapping = aes(x = tickets_to2014$Citation.Issue.Month))
-  ##Without 2008 and 2015
-tickets_no_partials <- filter(tickets, tickets$Citation.Issue.Year > 2008 & tickets$Citation.Issue.Year < 2015)
-table(tickets_no_partials$Citation.Issue.Month)
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Citation.Issue.Month))
 
 # Year
 table(tickets$Citation.Issue.Year)
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Year))
-#  *****There are only 37 violations for the beginning of 2015. Should be dropped*****
-#  *****Could also consider dropping 2008 as that is a partial year as well. (157)****** 
-  ##Without 2015
-table(tickets_to2014$Citation.Issue.Year)
-ggplot(data = tickets_to2014) + geom_bar(mapping = aes(x = tickets_to2014$Citation.Issue.Year))
-  ##Without 2008 and 2015
-table(tickets_no_partials$Citation.Issue.Year)
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Citation.Issue.Year))
 
 # Day of Week 
 table(tickets$Citation.Issue.DayOfWeek)
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.DayOfWeek))
-  ##Without 2015
-table(tickets_to2014$Citation.Issue.DayOfWeek)
-ggplot(data = tickets_to2014) + geom_bar(mapping = aes(x = tickets_to2014$Citation.Issue.DayOfWeek))
-  ##Without 2008 and 2015
-table(tickets_no_partials$Citation.Issue.DayOfWeek)
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Citation.Issue.DayOfWeek))
 # ******* Let's look at how we coded the Day of Week variable. This trend shoud be lower on Sunday ******
 
 # Weekday
 table(tickets$Citation.Issue.Weekday)
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Weekday))
-  ##Without 2015
-table(tickets_to2014$Citation.Issue.Weekday)
-ggplot(data = tickets_to2014) + geom_bar(mapping = aes(x = tickets_to2014$Citation.Issue.Weekday))
-  ##Without 2008 and 2015
-table(tickets_no_partials$Citation.Issue.Weekday)
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Citation.Issue.Weekday))
 # ******* Let's look at how we coded the Day of Week variable. This trend shoud be lower on Sunday ******
 
 #Hour 
 table(tickets$Citation.Issue.Hour)
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Hour))
-  ##Without 2015
-table(tickets_to2014$Citation.Issue.Hour)
-ggplot(data = tickets_to2014) + geom_bar(mapping = aes(x = tickets_to2014$Citation.Issue.Hour))
-  ##Without 2008 and 2015
-table(tickets_no_partials$Citation.Issue.Hour)
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Citation.Issue.Hour))
 # People are getting boned during rush hour on the way home
 
 #Summary stats for the different tickets datasets for years
 summary(tickets)
 summary(tickets_to2014)
-summary(tickets_no_partials)
+summary(tickets)
 ```
 
 ```{r EDA of Money and Violation variables, tidy=T, message=F}
@@ -148,25 +113,23 @@ table(tickets$Violation)
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation))
   #Violations broken down by year
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge")
-  ##Without 2015
-ggplot(data = tickets_to2014) + geom_bar(mapping = aes(x = tickets_to2014$Violation, fill = as.factor(tickets_to2014$Citation.Issue.Year)), position = "dodge")
-  ##Without 2008 and 2015
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Violation, fill = as.factor(tickets_no_partials$Citation.Issue.Year)), position = "dodge")
 
 #Fine amount
 table(tickets$Fine.Amount)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Fine.Amount))
-  ##By Violation (without 2008 and 2015)
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Fine.Amount)) + facet_wrap(~ tickets_no_partials$Violation)
+fine.plot <- ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Fine.Amount))
+fine.plot
+  ##By Violation
+fine.plot + facet_wrap(~ tickets$Violation)
   ## It is clear that tickets have a low fine amount and high fine amount. Is it time of day, weekday vs weekend, year, etc.?
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Fine.Amount, fill = as.factor(tickets_no_partials$Citation.Issue.Year)), position = "fill") + facet_wrap(~tickets_no_partials$Violation)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Fine.Amount, fill = tickets$Citation.Issue.Weekday), position = 'dodge') + facet_wrap(~ tickets$Violation)
+#ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Fine.Amount, fill = as.factor(tickets$Citation.Issue.Year)), position = "fill") + facet_wrap(~tickets$Violation)
 
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Fine.Amount, fill = tickets_no_partials$Citation.Issue.Weekday), position = "fill") + facet_wrap(~tickets_no_partials$Violation)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Fine.Amount, fill = tickets$Citation.Issue.Weekday), position = "fill") + facet_wrap(~tickets$Violation)
 
 
 #Citation Status
-table(tickets_no_partials$Citation.Status)
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Citation.Status))
+table(tickets$Citation.Status)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Status))
 
 #Amount paid
 table(tickets$Amount.Paid)
@@ -192,12 +155,9 @@ summary(tickets_due_status)
 ggplot(data = tickets_due_status) + geom_histogram(mapping = aes(x = tickets$Amount.Due, fill = tickets$Citation.Status))
   #That seems to tell the whole story
 
-
 #Paid on time
 table(tickets$Paid.On.Time)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Paid.On.Time))
-
-
+ggplot(data = tickets) + geom_bar(mapping = aes(x = as.factor(tickets$Paid.On.Time)))
 
 ```
 
@@ -212,13 +172,13 @@ ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation))
   #Violations broken down by year
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge")
   #No partial years
-ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Violation, fill = as.factor(tickets_no_partials$Citation.Issue.Year)), position = "dodge")
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge")
 
 #Because the distribution of fine amount has several high-end outliers, we should be using the median as our measure of central tendency. This is even more clear when comparing the difference between the mean and median (112.7 and 85). 
 median(tickets$Fine.Amount)
 mean(tickets$Fine.Amount)
-median(tickets_no_partials$Fine.Amount)
-mean(tickets_no_partials$Fine.Amount)
+median(tickets$Fine.Amount)
+mean(tickets$Fine.Amount)
 
 # find the median fine amount by violation
 fine_by_viol <- tickets %>% 
