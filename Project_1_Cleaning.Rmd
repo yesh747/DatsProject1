@@ -176,6 +176,7 @@ levels(tickets$Violation) <- list("BUS ZONE" = "BUS ZONE", "DBL PARK" = "DBL PAR
 #Year Variable
 table(tickets$Citation.Issue.Year)
   ##Drop 2008 and 2015. *** 191 OBSERVATIONS DROPPED *** 
+tickets <- filter(tickets, tickets$Citation.Issue.Year > 2008 & tickets$Citation.Issue.Year < 2015) 
 ```
 
 
