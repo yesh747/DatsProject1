@@ -1,0 +1,10 @@
+---
+title: "Project_1_EDA"
+author: "Michael Arango, Yeshwant Chillakuru, Jackson Crum"
+date: "March 5, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
