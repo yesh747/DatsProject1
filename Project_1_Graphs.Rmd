@@ -127,6 +127,8 @@ tickets$Citation.Issue.DayOfWeek <- wday(tickets$Citation.Issue.Date)
 # Create column indicating whether the ticket was issued on: weekday (1), weekend (0)
 tickets$Citation.Issue.Weekday <- ifelse(tickets$Citation.Issue.DayOfWeek >= 2 & tickets$Citation.Issue.DayOfWeek <= 6, 1, 0)
 tickets$Citation.Issue.Weekday <- as.factor(tickets$Citation.Issue.Weekday)
+  #Code levels of Weekday variable
+levels(tickets$Citation.Issue.Weekday) <- list("Weekend" = 0 , "Weekday" = 1)
 
 # Convert Citation.Issue.DayOfWeek from 1, 2, 3, 4, 5, 6, 7 to Mon, Tues, Wed, Thurs, Fri, Sat
 tickets$Citation.Issue.DayOfWeek <- wday(tickets$Citation.Issue.Date, label = TRUE)
@@ -172,6 +174,9 @@ tickets <- tickets[!table(tickets$Violation)[tickets$Violation] <= 70,]
 table(tickets$Violation)
   #Recode factor varibale without the Null categories
 levels(tickets$Violation) <- list("BUS ZONE" = "BUS ZONE", "DBL PARK" = "DBL PARK", "PK PHB OTD" = "PK PHB OTD", "PRK PROHIB" = "PRK PROHIB", "TWAWY ZN#1" = "TWAWY ZN#1", "TWAWY ZONE" = "TWAWY ZONE")
+
+
+
 
 
 
@@ -254,6 +259,7 @@ summary(tickets_due_status)
 ggplot(data = tickets_due_status) + geom_histogram(mapping = aes(x = tickets$Amount.Due, fill = tickets$Citation.Status))
   #That seems to tell the whole story
 
+
 #Paid on time
 summary(tickets$Paid.On.Time)
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Paid.On.Time))
@@ -261,10 +267,46 @@ ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Paid.On.Time))
 # Month
 table(tickets$Citation.Issue.Month)
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Month))
+  ##Without 2015 
+table(tickets_to2014$Citation.Issue.Month)
+ggplot(data = tickets_to2014) + geom_bar(mapping = aes(x = tickets_to2014$Citation.Issue.Month))
 
+# Year
+table(tickets$Citation.Issue.Year)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Year))
+#  *****There are only 37 violations for the beginning of 2015. Should be dropped*****
+#  *****Could also consider dropping 2008 as that is a partial year as well. (157)****** 
+  ##Without 2015
+table(tickets_to2014$Citation.Issue.Year)
+ggplot(data = tickets_to2014) + geom_bar(mapping = aes(x = tickets_to2014$Citation.Issue.Year))
+  ##Without 2008 and 2015
+tickets_no_partials <- filter(tickets, tickets$Citation.Issue.Year > 2008 & tickets$Citation.Issue.Year < 2015)
+table(tickets_no_partials$Citation.Issue.Year)
+ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Citation.Issue.Year))
 
+# Day of Week 
+table(tickets$Citation.Issue.DayOfWeek)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.DayOfWeek))
+  ##Without 2015
+table(tickets_to2014$Citation.Issue.DayOfWeek)
+ggplot(data = tickets_to2014) + geom_bar(mapping = aes(x = tickets_to2014$Citation.Issue.DayOfWeek))
+  ##Without 2008 and 2015
+tickets_no_partials <- filter(tickets, tickets$Citation.Issue.Year > 2008 & tickets$Citation.Issue.Year < 2015)
+table(tickets_no_partials$Citation.Issue.DayOfWeek)
+ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Citation.Issue.DayOfWeek))
+# ******* Let's look at how we coded the Day of Week variable. This trend shoud be lower on Sunday ******
 
-
+# Weekday
+table(tickets$Citation.Issue.Weekday)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Weekday))
+  ##Without 2015
+table(tickets_to2014$Citation.Issue.Weekday)
+ggplot(data = tickets_to2014) + geom_bar(mapping = aes(x = tickets_to2014$Citation.Issue.Weekday))
+  ##Without 2008 and 2015
+tickets_no_partials <- filter(tickets, tickets$Citation.Issue.Year > 2008 & tickets$Citation.Issue.Year < 2015)
+table(tickets_no_partials$Citation.Issue.Weekday)
+ggplot(data = tickets_no_partials) + geom_bar(mapping = aes(x = tickets_no_partials$Citation.Issue.Weekday))
+# ******* Let's look at how we coded the Day of Week variable. This trend shoud be lower on Sunday ******
 
 ```
 
