@@ -20,32 +20,37 @@ library(tidyverse)
 library(tidyr)
 # date format library
 library(lubridate)
-# geolibraries
-library(rgdal)
-library(sp)
-library(raster)
 ```
 
-# Yesh's Stuff
+#Exploratory Data Analysis
+
+```{r Read in the file, tidy=T, results = 'hide'}
+getwd()
+tickets <- read.csv("tickets.csv", header=T)
+```
+
+##
+
+
+# Yesh EDA
+
 ## What traffic only lane violations are most common?
 ```{r violations, tidy=T, message=FALSE, echo=FALSE}
-#Read in the cleaned dataset
-tickets <- read.csv("tickets.csv", header=TRUE)
-
+#Plot violations by count 
 ggplot(data=tickets, aes(Violation)) + geom_bar() + coord_flip() + geom_text(stat="count", aes(label=..count..))
 ```
 
 ## What traffic lane violations make up the most revenue?
 ```{r violations2, tidy=T, message=FALSE, echo=FALSE}
-
-
+#Create Total Revenue variable for each violation
 tickets.violation <- aggregate(tickets[,c("Amount.Paid")], by=list(tickets$Violation), FUN=sum)
 tickets.violation <- rename(tickets.violation, Violation = Group.1, Total.Revenue = x)
-
+#Plot Revenue by violation
 ggplot(tickets.violation, aes(x=Violation, y=Total.Revenue)) + geom_bar(stat="identity") + coord_flip() + geom_text(aes(label=Total.Revenue))
+  ##Graph for total revenue of violations looks pretty similar to graph of violation counts above
 
+#Remove total revenue variable
 rm(tickets.violation)
-
 ```
 
 ## What violations produce the most daily revenue on weekends and weekdays?
