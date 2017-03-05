@@ -178,6 +178,10 @@ str(tickets)
 
 
 ```{r Basic mapping of violation point data on San Fran map}
+
+
+
+
 sanfran <- c(lon = -122.42, lat = 37.77)
 sanfran_map <- get_map(location = sanfran, zoom = 13)
 ggmap(sanfran_map) + geom_point(data = tickets, aes(x = Longitude, y = Latitude))
@@ -507,13 +511,13 @@ asshole
 ```
 
 ```{r}
-ass <- tickets %>% group_by(Citation.Issue.DayOfWeek) %>% summarise(median = median(Amount.Paid))
-ass
+MedianPerWeek <- tickets %>% group_by(Citation.Issue.DayOfWeek) %>% summarise(median = median(Amount.Paid))
+
 
 MedianPaid <- median(tickets$Amount.Paid)
 
 
-ggplot(ass, aes(x = Citation.Issue.DayOfWeek, y = median)) + geom_bar(fill = "red", color = "black", stat='identity') + coord_flip() + geom_hline(yintercept = MedianPaid, linetype = "longdash", colour = "blue")
+ggplot(MedianPerWeek, aes(x = Citation.Issue.DayOfWeek, y = median)) + geom_bar(fill = "red", color = "black", stat='identity') + coord_flip() + geom_hline(yintercept = MedianPaid, linetype = "longdash", colour = "blue")
 
 MediansPerMonth<- tickets %>% group_by(Citation.Issue.Month, Citation.Issue.Year) %>% summarise(Median = median(Amount.Paid))
 
