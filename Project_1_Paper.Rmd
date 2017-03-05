@@ -55,3 +55,4 @@ The raw dataset contains the following variables regarding the transit-only lane
 # TO-DO: 
   * something about Bills - ask Jack'
   * Bill introduced in 2007, reevaluated in 2011, made permanent in 2015
+  
