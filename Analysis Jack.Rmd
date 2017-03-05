@@ -1,0 +1,128 @@
+---
+title: "Analysis"
+author: "Jack Crum"
+date: "March 5, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggmap)
+library(dplyr)
+library(tidyverse)
+library(tidyr)
+
+# date format library
+library(lubridate)
+
+# geolibraries
+library(rgdal)
+library(sp)
+library(raster)
+```
+
+
+# # Analysis of Daily Revenues
+
+```{r Analysis Means}
+#Create the week variable
+dateRange <- c(tickets$Citation.Issue.Date) 
+x <- as.POSIXlt(dateRange) 
+tickets$Citation.Issue.Week <- strftime(x,format="%W")
+
+#Daily Analysis
+DailyTotals<- tickets %>% group_by(Citation.Issue.Date) %>% summarise(Total = sum(Amount.Paid))
+
+head(DailyTotals)
+
+AverageDay <- mean(DailyTotals$Total)
+AverageDay
+
+MedianDay <- median(DailyTotals$Total)
+MedianDay
+
+Daily <- DailyTotals$Total
+
+var(Daily)
+sd(Daily)
+quantile(Daily, c(.1, .3, .5, .7, .9))
+shapiro.test(Daily)
+
+#EDA Graphs for Rushhour
+qqnorm(Daily)
+qqline(Daily)
+
+
+ggplot(DailyTotals, aes(x = Total)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="pink") + 
+  geom_density(alpha=.5, fill="red") + 
+  geom_vline(xintercept = AverageDay, linetype = "longdash", colour = "blue") + geom_vline(xintercept = MedianDay, linetype = "twodash" , colour = "green")
+
+```
+
+# # Analysis of Weekly Revenues
+
+```{r}
+
+#Weekly Total Revenue Mean compared to each Week's Total Revenue
+#Weekly Analysis
+WeeklyTotals<- tickets %>% group_by(Citation.Issue.Week, Citation.Issue.Month, Citation.Issue.Year) %>% summarise(Total = sum(Amount.Paid))
+
+head(WeeklyTotals)
+
+mean.Weekly <- mean(WeeklyTotals$Total)
+mean.Weekly
+
+MedianWeek <- median(WeeklyTotals$Total)
+MedianWeek
+
+Weekly <- WeeklyTotals$Total
+
+var(Weekly)
+sd(Weekly)
+quantile(Weekly, c(.1, .3, .5, .7, .9))
+shapiro.test(Weekly)
+
+qqnorm(Weekly)
+qqline(Weekly)
+
+ggplot(WeeklyTotals, aes(x = Total)) + geom_histogram(aes(y = ..density..), fill = "pink", colour = "black", binwidth = 500) + geom_density(alpha=.5, fill="red") + geom_vline(xintercept = AverageWeek, linetype = "longdash", colour = "blue") + geom_vline(xintercept = MedianWeek, linetype = "twodash" , colour = "green")
+sd.Week <- sd(WeeklyTotals$Total)
+sd.Week
+
+
+```
+
+# # Analysis of Monthly Revenues
+
+```{r Monthly Revenue}
+#Monthly Analysis
+MonthlyTotals<- tickets %>% group_by(Citation.Issue.Month, Citation.Issue.Year) %>% summarise(Total = sum(Amount.Paid))
+
+head(MonthlyTotals)
+
+
+#EDA of Statistics of Monthly Revenue
+AverageMonth <- mean(MonthlyTotals$Total)
+AverageMonth
+
+MedianMonth <- median(MonthlyTotals$Total)
+MedianMonth
+
+Monthly <- MonthlyTotals$Total
+
+var(Monthly)
+sd(Monthly)
+quantile(Monthly, c(.1, .3, .5, .7, .9))
+shapiro.test(Monthly)
+
+#EDA Graphs for Rushhour
+qqnorm(Monthly)
+qqline(Monthly)
+
+
+
+ggplot(MonthlyTotals, aes(x = Total)) + geom_histogram(aes(y = ..density..), fill = "pink", colour = "black", binwidth = 2000) + geom_density(alpha=.5, fill= "red") + geom_vline(xintercept = AverageMonth, linetype = "longdash", colour = "blue") + geom_vline(xintercept = MedianMonth, linetype = "twodash" , colour = "green")
+
+```
