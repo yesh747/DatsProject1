@@ -26,21 +26,18 @@ library(lubridate)
 
 ```{r Read in the file, tidy=T, results = 'hide'}
 getwd()
-tickets <- read.csv("tickets.csv", header=T)
+tickets <- data.frame(read.csv("tickets.csv", header=T, sep=','))
 ```
 
-##
+##Violations
 
-
-# Yesh EDA
-
-## What traffic only lane violations are most common?
+###What TOLE violations are most common?
 ```{r violations, tidy=T, message=FALSE, echo=FALSE}
 #Plot violations by count 
 ggplot(data=tickets, aes(Violation)) + geom_bar() + coord_flip() + geom_text(stat="count", aes(label=..count..))
 ```
 
-## What traffic lane violations make up the most revenue?
+###What TOLE violations produce the most revenue
 ```{r violations2, tidy=T, message=FALSE, echo=FALSE}
 #Create Total Revenue variable for each violation
 tickets.violation <- aggregate(tickets[,c("Amount.Paid")], by=list(tickets$Violation), FUN=sum)
@@ -53,9 +50,11 @@ ggplot(tickets.violation, aes(x=Violation, y=Total.Revenue)) + geom_bar(stat="id
 rm(tickets.violation)
 ```
 
+# Yesh EDA
+
 ## What violations produce the most daily revenue on weekends and weekdays?
 ```{r violations3, tidy=T, message=FALSE, echo=FALSE}
-
+#Create Violation by weekday variable 
 tickets.violWeekday <- aggregate(tickets[,c("Amount.Paid")], by=list(tickets$Violation, tickets$Citation.Issue.Weekday), FUN=sum)
 tickets.violWeekday <- rename(tickets.violWeekday, Violation = Group.1, Weekday = Group.2, Total.Revenue = x)
 tickets.violWeekday$Daily.Average.Revenue <- ifelse(tickets.violWeekday$Weekday == 1, tickets.violWeekday$Total.Revenue/5, tickets.violWeekday$Total.Revenue/2)
