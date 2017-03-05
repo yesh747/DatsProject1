@@ -22,22 +22,22 @@ library(tidyr)
 library(lubridate)
 ```
 
-#Exploratory Data Analysis
 
 ```{r Read in the file, tidy=T, results = 'hide'}
 getwd()
 tickets <- data.frame(read.csv("tickets.csv", header=T, sep=','))
 ```
 
-##Violations
+#Violations
 
-###What TOLE violations are most common?
+##What TOLE violations are most common?
 ```{r violations, tidy=T, message=FALSE, echo=FALSE}
+table(tickets$Violation)
 #Plot violations by count 
 ggplot(data=tickets, aes(Violation)) + geom_bar() + coord_flip() + geom_text(stat="count", aes(label=..count..))
 ```
 
-###What TOLE violations produce the most revenue
+##What TOLE violations produce the most revenue?
 ```{r violations2, tidy=T, message=FALSE, echo=FALSE}
 #Create Total Revenue variable for each violation
 tickets.violation <- aggregate(tickets[,c("Amount.Paid")], by=list(tickets$Violation), FUN=sum)
@@ -50,9 +50,7 @@ ggplot(tickets.violation, aes(x=Violation, y=Total.Revenue)) + geom_bar(stat="id
 rm(tickets.violation)
 ```
 
-# Yesh EDA
-
-## What violations produce the most daily revenue on weekends and weekdays?
+###What TOLE Violations produce the most revenue on weekends and weekdays?
 ```{r violations3, tidy=T, message=FALSE, echo=FALSE}
 #Create variable that store sum of apount paid by violation and weekday 
 tickets.violWeekday <- aggregate(tickets[,c("Amount.Paid")], by=list(tickets$Violation, tickets$Citation.Issue.Weekday), FUN=sum)
@@ -69,23 +67,25 @@ p + geom_bar(stat="identity") + coord_flip()
 rm(p, tickets.violWeekday)
 ```
 
-## What times get the most tickets for the top 3 violation types?
+##For the top 3 violations, what hours are most ticketed? 
 ```{r violations4, tidy=T, message=FALSE, echo=FALSE}
-
+#Figure out which ciolations are top 3 types
 ViolCount <- tickets %>% group_by(Violation) %>% summarise(freq=n())
 topViol <- ViolCount[order(-ViolCount$freq),]
 topViol <- topViol[1:3,]
-
-
-# tickets.topViol <- subset(tickets, tickets$Violation == topViol[1,1] | tickets$Violation == topViol[2,1] | tickets$Violation == topViol[3,1])
+  ##New dataframe with top 3 violations
 tickets.topViol <- subset(tickets, tickets$Violation == topViol$Violation[1] | tickets$Violation == topViol$Violation[2] | tickets$Violation == topViol$Violation[3])
-
+  ##Rename column
 tickets.topViol <- rename(tickets.topViol, Top.3.Violations = Violation)
-
+  ##Plot top 3 violations by issue hour
 p1 <- ggplot(tickets.topViol, aes(Citation.Issue.Hour, fill=Top.3.Violations))
 p1 + geom_density(alpha = .6)
-
+#Plot all violations by hour; NOTE: This is not very helpful
+p2 <- ggplot(tickets, aes(Citation.Issue.Hour, fill = Violation))
+p2 + geom_density(alpha = .6)
 ```
+
+# Yesh EDA
 
 ## Which fees get the most tickets for the top 3 violation types?
 ```{r violations5, tidy=T, message=FALSE, echo=FALSE}
