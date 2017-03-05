@@ -116,7 +116,6 @@ names(tickets)[names(tickets) == "X1"] <- "Latitude"
 names(tickets)[names(tickets) == "X2"] <- "Longitude"
 tickets$Latitude <- as.numeric(as.character(tickets$Latitude))
 tickets$Longitude <- as.numeric(as.character(tickets$Longitude))
-head(tickets)
 
 # Create column indicating the year the ticket was issued
 tickets$Citation.Issue.Year <- year(tickets$Citation.Issue.Date)
@@ -173,6 +172,11 @@ tickets <- tickets[!table(tickets$Violation)[tickets$Violation] <= 70,]
 table(tickets$Violation)
   #Recode factor varibale without the Null categories
 levels(tickets$Violation) <- list("BUS ZONE" = "BUS ZONE", "DBL PARK" = "DBL PARK", "PK PHB OTD" = "PK PHB OTD", "PRK PROHIB" = "PRK PROHIB", "TWAWY ZN#1" = "TWAWY ZN#1", "TWAWY ZONE" = "TWAWY ZONE")
+
+#Year Variable
+table(tickets$Citation.Issue.Year)
+  ##Drop 2008 and 2015. *** 191 OBSERVATIONS DROPPED *** 
+tickets <- filter(tickets, tickets$Citation.Issue.Year > 2008 & tickets$Citation.Issue.Year < 2015) 
 ```
 
 
@@ -190,7 +194,7 @@ levels(tickets$Violation) <- list("BUS ZONE" = "BUS ZONE", "DBL PARK" = "DBL PAR
     * This led to 78 observation being dropped
     * It is worth noting that only 1 violation was deemed not to be a violation
 
-Overall, we dropped `r 78 + 84 + 21` of the original 17,178 observations in the dataset. This only accounts for `r round(((78 + 84 + 21)/17178)*100,2)` percent of the dataset. Thus, we are confident that we did not introduce any inherent biases to the data by dropping the aforementioned observations. 
+Overall, we dropped `r 191 + 78 + 84 + 21` of the original 17,178 observations in the dataset. This only accounts for `r round(((191 + 78 + 84 + 21)/17178)*100,2)` percent of the dataset. Thus, we are confident that we did not introduce any inherent biases to the data by dropping the aforementioned observations. 
 
 ##Cleaned Dataset
 
