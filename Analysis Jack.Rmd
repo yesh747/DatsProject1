@@ -22,6 +22,10 @@ library(sp)
 library(raster)
 ```
 
+```{r Read csv, tidy=T, results='hide', message=F}
+getwd()
+tickets <- read.csv('tickets.csv', header=T)
+```
 
 # # Analysis of Daily Revenues
 
