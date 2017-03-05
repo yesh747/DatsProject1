@@ -5,18 +5,49 @@ date: "March 5, 2017"
 output: pdf_document
 ---
 
+```{r loadData <- t}
+
+rawTickets <- data.frame(read.csv('Muni_Driver_Reported_Transit_Only_Lane_Violations.csv', header = T, sep = ","))
+tickets <- read.csv("tickets.csv")
+
+```
+
+
 # Background on Dataset
 
-## General information
-The Transit-Only Lane Enforcement (TOLE) is run by the City of San Fransico to reduce obstruction of transit-only lanes through increased enforcement. Currently, private and commerical vehicles that drive and park in transit-only lanes can cause delays in bus service, increase traffic jams, and inconveniencing customers.
+## General information and Data Collection
+The Transit-Only Lane Enforcement (TOLE) is run by the San Fransico Municipal Transportation Agency (SFMTA) from March 2008 to February 2015 as a pilot program to reduce obstruction of transit-only lanes through increased enforcement. Currently, private and commerical vehicles that drive and park in transit-only lanes can cause delays in bus service, increase traffic jams, and inconveniencing customers.
 
-Under the TOLE program, all public buses are equipped with video cameras to capture the license plates of vehicles parked or stopped in a dedicated transit-lane. The vehicle's registered owner will then recieve the ciation in the mail in aims to deter future transit-only lane violations. These citations and their details form the dataset we are examining.
+Under the TOLE program, all public buses are equipped with video cameras to capture the license plates of vehicles parked or stopped in a dedicated transit-lane. The vehicle's registered owner will then recieve the ciation in the mail in aims to deter future transit-only lane violations. These citations and their details form the dataset we are examining.The data were obtained from the US government's open data site at https://catalog.data.gov/dataset/muni-driver-reported-transit-only-lane-violations. 
 
 San Fransico currently operates 26 miles transit-only lanes with 160,000 daily passsengers and planned future expansion of 22 miles, so the TOLE program has strong potential for long-term impact by increasing the efficiency of the municipal transity system and potentially increasing municipal revenue temporarily as drivers adjust to the enforcement scheme.
 
-## Information about Dataset
+
+## Background on dataset
+
 The raw dataset contains the following variables regarding the transit-only lane violations:
 
+* `Object.ID` -- Unique key that corresponds to each observation
+* `Ticket.Number` -- Unique number that corresponds to each ticket catalogued with the Superior Court of San Francisco
+* `Citation.Issue.Date` -- The date (MM/DD/YY) that the traffic only lane violation citation was issued
+* `Citation.Issue.Month` -- The month (MM) that the traffic only lane violation citation was issued; This column was completely blank when downloaded
+* `Citation.Issue.Time` -- The time of day (HH:MM) PST that the traffic only lane violation citation was issued
+* `Location` -- The street address where the traffic only lane violation citation was issued
+* `Violation.Code` -- A code that corresponds to the type of traffic only lane violation that was committed to warrant issuing a citation
+* `Violation` -- Description of the traffic only lane violation issued in the citation
+* `Fine.Amount` -- The dollar amount of to be paid for the traffic only lane violation
+* `Citation.Status` -- Status of the citation (Open, Closed, Unapplied)
+* `Amount.Paid` -- The dollar amount paid for the traffic only lane violation
+* `Amount.Due` -- Outstanding balance for the traffic only lane violation 
+* `Suspend.Code` -- Code that represents reason for license suspension (Suspended until the driver goes to driving school, pays fine, too many points on license, etc.)
+* `Suspend.Process.Date` -- Date the license suspension goes into effect
+* `Suspend.Until.Date` -- Date the license suspension is over
+* `Disposition.Code` -- The city of San Francisco does not release disposition codes
+* `Last.Edited.Date` -- Date that represents the last date the corresponding observation was edited; This column was completely blank when downloaded
+* `Geom` -- The latitude and longitude (latitutde, longitude) of the traffic only lane violation 
+
+
+## 
 
 
 # NOTES:
