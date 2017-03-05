@@ -160,8 +160,18 @@ tickets$Citation.Issue.Time <- NULL
 tickets$Suspend.Process.Date <- NULL
 tickets$Suspend.Until.Date <- NULL
 tickets$Geom <- NULL
-# Drop "NO VIOL" observations in Violation variable. ***1 OBSERVATIONS DROPPED***
-tickets <- tickets[!(tickets$Violation == "NO VIOL"),]
+
+#Violation Variable 
+table(tickets$Violation)
+  # Drop "NO VIOL" in Violation variable. ***1 OBSERVATION DROPPED***
+  # Drop "ON SIDEWLK" in Violation variable. ***1 OBSERVATION DROPPED***
+  # Drop "OVR 18" C" in Violation variable. ***5 OBSERVATIONS DROPPED***
+  # Drop "PK FR LN" in Violation variable. ***1 OBSERVATION DROPPED***
+  # Drop "TRNST ONLY" in Violation variable. ***70 OBSERVATION DROPPED***
+tickets <- tickets[!table(tickets$Violation)[tickets$Violation] <= 70,]
+table(tickets$Violation)
+  #Recode factor varibale without the Null categories
+levels(tickets$Violation) <- list("BUS ZONE" = "BUS ZONE", "DBL PARK" = "DBL PARK", "PK PHB OTD" = "PK PHB OTD", "PRK PROHIB" = "PRK PROHIB", "TWAWY ZN#1" = "TWAWY ZN#1", "TWAWY ZONE" = "TWAWY ZONE")
 
 # Create neighborhood column using Lat/Long and Census Block Data from shp file
 ## Thanks to Shekeine for instructions: http://stackoverflow.com/questions/29872109/binning-longitude-latitude-labeled-data-by-census-block-id
@@ -210,13 +220,15 @@ hist(tickets$Fine.Amount)
 
 #Because the distribution of fine amount has several high-end outliers, we should be using the median as our measure of central tendency. This is even more clear when comparing the difference between the mean and median (112.7 and 85). 
 median(tickets$Fine.Amount)
+mean(tickets$Fine.Amount)
 
 # find the median fine amount by violation
 fine_by_viol <- tickets %>% 
   group_by(Violation) %>% 
   summarise(median = median(Fine.Amount))
 fine_by_viol
-hist(fine_by_viol$median)
+
+#Maybe put these results in a table?
 
 # find the median fine amount by year
 fine_by_year <- tickets %>%
