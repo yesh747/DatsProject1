@@ -172,7 +172,9 @@ rm(p, tickets.violWeekday)
 We saw that there was potential for certain days of the week to generate more revenue than others so we decided to focus on how revenue can vary based on each day of the week. Understanding the deviation of median revenue for weekdays from the median daily revenue is an ideal starting point for further analysis. If deviation is present, then future work could examine variation based on violation type, time of day, rush hour vs non-rush hour, etc.. Additionally, using median is justified to account for the biasing effect of the uneven bimodal distribution of fine amounts (the high and low fines) and other outliers. Ideally, if the dataset could be connected to traffic flow/congestion rate data, then this analysis could be examined to better understand the impact of this program on actual traffic flows. 
 
 
-##SMART Question 
+##SMART Questions 
+_**In the San Francisco TOLE program, is the type of violation issued in the citation independent from the day of the week?**_
+
 _**In the TOLE program, which days of the week earn significantly more or less revenue than the overall median daily revenue?**_
 
 
@@ -222,6 +224,8 @@ The mean daily median revenue1 is `r as.character(meanDailyMedianRevenue)`. The 
 
 [^shapiro]:(reject the null hypothesis that the sample comes from a population with a normal distribution based on Shapiro Test of Normality where p = `r as.character(round(st$p.value),5)`) 
 
+### $\chi^2$ Test of Independence
+
 We decided to do a $\chi^2$ test in order to determine whether the violation type is independent of the day of the week. The following is the contignency table:
 
 
@@ -230,10 +234,7 @@ chi <- chisq.test(tickets$Violation, tickets$Citation.Issue.DayOfWeek)
 chi[c('observed', 'expected')]
 ```
 
-The $\chi^2$ test with `r chi$parameter` degrees of freedom resulted in a $\chi^2$ statistic of `r round(chi$statistic,3)` and a p-value of `r round(chi$p.value,10)`. This means that the violation types are independent of the days of the week. 
+The $\chi^2$ test with `r chi$parameter` degrees of freedom resulted in a $\chi^2$ statistic of `r round(chi$statistic,3)` and a p-value of approximately `r round(chi$p.value,10)`. Thus, we reject the null hypothesis that the violation types are *not* independent of the days of the week. 
 
 # Conclusion
 
-
-# TO-DO: 
-  * reword SMART Question
