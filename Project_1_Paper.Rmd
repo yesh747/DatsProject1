@@ -11,6 +11,7 @@ knitr::opts_chunk$set(fig.pos = 'H')
 
 library(ggplot2)
 library(dplyr)
+library(scales)
 
 rawTickets <- data.frame(read.csv('Muni_Driver_Reported_Transit_Only_Lane_Violations.csv', header = T, sep = ","))
 tickets <- read.csv("tickets.csv")
@@ -21,7 +22,7 @@ tickets <- read.csv("tickets.csv")
 # Background Information on Dataset
 
 ## General Information and Data Collection Process
-The Transit-Only Lane Enforcement (TOLE),run by the San Fransico Municipal Transportation Agency (SFMTA) from March 2008 to February 2015, is a pilot program to reduce obstruction of transit-only lanes through increased enforcement. Currently, private and commerical vehicles that drive and park in transit-only lanes can cause delays in bus service, increases in traffic congestion, and inconveniences to customers.
+The Transit-Only Lane Enforcement (TOLE), run by the San Fransico Municipal Transportation Agency (SFMTA) from March 2008 to February 2015, is a pilot program to reduce obstruction of transit-only lanes through increased enforcement. Currently, private and commerical vehicles that drive and park in transit-only lanes can cause delays in bus service, increases in traffic congestion, and inconveniences to customers.
 
 Under the TOLE program, all public buses are equipped with front-facing video cameras to capture the license plates of vehicles parked or stopped in a dedicated transit-lane. The vehicle's registered owner will then recieve the citation in the mail as a means to deter future transit-only lane violations. These citations and their accompanying details form the dataset we are examining.[^1]
 
@@ -170,14 +171,38 @@ p + geom_col() + coord_flip() + theme(plot.title = element_text(hjust = 0.5)) + 
 rm(p, tickets.violWeekday)
 ```
 
-We saw that there was a potential for certain days of the week to generate more revenue than others so we decided to focus on how revenue can vary based on each day of the week. Understanding the deviation of median revenue for weekday from the median daily revenue is an ideal starting point for further analysis. If deviation is present, then future work could examine variation based on violation type, time of day, rush hour vs non-rush hour. Additionally, using median is justified to account for the biasing effect of the uneven bimodal distribution of fine amounts (the high and low fines) and outher outliers. Ideally, if the dataset could be connected to traffic flow/congestion rate data, then this analysis could be examined to better understand the impact of this program on actual traffic flows. Therefore, we have settled on the SMART question:
+We saw that there was a potential for certain days of the week to generate more revenue than others so we decided to focus on how revenue can vary based on each day of the week. Understanding the deviation of mean revenue for weekday from the mean daily revenue is an ideal starting point for further analysis. If deviation is present, then future work could examine variation based on violation type, time of day, rush hour vs non-rush hour. Additionally, using median is justified to account for the biasing effect of the uneven bimodal distribution of fine amounts (the high and low fines) and outher outliers. Ideally, if the dataset could be connected to traffic flow/congestion rate data, then this analysis could be examined to better understand the impact of this program on actual traffic flows. Therefore, we have settled on the SMART question:
 
 _**In the TOLE program, which days of the week earn significantly more or less median daily revenue than the overall median daily revenue?**_
 
-
+\newpage
 ## Answering the SMART Question
-  * Bar graph, weekday (x-axis) vs median daily fine amount (y-axis) with fill on Violation Type
-  * Bar graph for each fine type
+
+```{r EDA6, echo=FALSE}
+#Calculateand plot the Median Daily Revenue
+tickets_day_rev2 <- tickets %>% group_by(Citation.Issue.DayOfWeek) %>% summarise(Median.Daily.Revenue = median(Amount.Paid)*n())
+
+ggplot(data = tickets_day_rev2) + geom_col(mapping = aes(x = tickets_day_rev2$Citation.Issue.DayOfWeek, y= Median.Daily.Revenue), fill="Salmon", color="black") + xlab("Citation Day of Week") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Median Daily Revenue") + ylab("Median Daily Revenue")+ scale_y_continuous(label=comma) + geom_hline(yintercept = median(tickets_day_rev2$Median.Daily.Revenue))
+
+
+# find median daily revenue by violation type
+tickets_viol_median_rev <- tickets %>% group_by(Violation) %>% summarise(Median.Violation.Revenue = median(Amount.Paid)*n()/7)
+
+
+#Calculateand plot the Median Daily Revenue by Violation type
+
+tickets_day_rev <- tickets %>% group_by(Violation, Citation.Issue.DayOfWeek) %>% summarise(Median.Daily.Revenue = median(Amount.Paid)*n())
+
+ggplot(data = tickets_day_rev) + geom_col(mapping = aes(x = tickets_day_rev$Citation.Issue.DayOfWeek, y= Median.Daily.Revenue), fill="Salmon", color="black") + xlab("Citation Day of Week") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Median Daily Revenue by Violation") + ylab("Median Daily Revenue") + facet_wrap(~Violation) + scale_y_continuous(label=comma)  + geom_hline(data=tickets_viol_median_rev, aes(yintercept = tickets_viol_median_rev$Median.Violation.Revenue))
+
+```
+
+From the "Distribution of Median Daily Revenue," we see that Tuesday appears to generate more revenue than the median daily revenue However, Friday and Saturday appear to have significantly less than median daily revenue. When broken down by violation type in "Distribution of Median Daily Revenue by Violation", Tuesday's high overall value is not able to be visually attributed to any single violation. However, Friday and Saturday can be attributed to below median revenue daily revenue in generation in all violations except `DBL PARK` and `BUS ZONE`, which both seem consistent across all days. Also, `TWAWY ZN#1` has a notably higher than median revenue generation on Monday.
+
+
+
+* Variance calculation
+* Chi Square 
 
 # NOTES:
   * 
@@ -185,4 +210,5 @@ _**In the TOLE program, which days of the week earn significantly more or less m
 # TO-DO: 
   * CITATIONS!!!!!!!!!!!!!!!!!!!!
   * add summary stats/dimensions to the background of the dataset
+  * Variance calcuation
   * Bill introduced in 2007, reevaluated in 2011, made permanent in 2015

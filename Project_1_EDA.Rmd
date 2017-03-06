@@ -11,16 +11,17 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ----------------------------------------------------------------------
 
-```{r Packages, tidy=T, results='hide', message =F}
+```{r Manage Packages, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 #Libraries
+library(ggmap)
 library(dplyr)
-library(doBy)
 library(tidyverse)
 library(tidyr)
 library(scales)
 library(lubridate)
-library(ggmap)
 ```
+
 
 ```{r Read in the file, tidy=T, results = 'hide'}
 getwd()
@@ -33,14 +34,14 @@ tickets <- data.frame(read.csv("tickets.csv", header=T, sep=','))
 ```{r Most common violations, tidy=T, message=FALSE, echo=FALSE}
 table(tickets$Violation)
 #Plot violations by count 
-ggplot(data=tickets) + geom_bar(mapping = (aes(Violation)), fill = "salmon", color="black") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Number of Tickets by Violation")
+ggplot(data=tickets) + geom_bar(mapping = (aes(Violation)), fill = "salmon") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Number of Tickets by Violation")
 ```
 
 ##What TOLE violations produce the most revenue?
 ```{r violations most revenue, tidy=T, message=FALSE, echo=FALSE}
 #tickets by viol and summed by amount paid
 tickets_by_viol <- tickets %>% group_by(Violation) %>% summarise(Total.Revenue = sum(Amount.Paid))
-ggplot(tickets_by_viol) + geom_col(mapping = aes(x=Violation, y=Total.Revenue), fill = "salmon", color="black") + scale_y_continuous(labels = comma) + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Total Revenue of Tickets by Violation") + ylab("Total Revenue")
+ggplot(tickets_by_viol) + geom_col(mapping = aes(x=Violation, y=Total.Revenue), fill = "salmon") + scale_y_continuous(labels = comma) + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Total Revenue of Tickets by Violation") + ylab("Total Revenue")
   ##Graph for total revenue of violations looks pretty similar to graph of violation counts above
 
 #Remove dataframe
@@ -100,9 +101,6 @@ Tickets.per.Hour
   ##Plot violations by hour
 ggplot(tickets, aes(x = Citation.Issue.Hour, fill = Violation)) + geom_bar(position = "fill") + scale_x_continuous(breaks = seq(0, 24, 1)) + xlab("Hour of Citation") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Stacked Bar Chart of Violations by Citation Issue Hour ")
 # NOTE: The graph shows almost entirely Double Parking and Bus Zone Violations during non-rush-hour and almost entirely Towaway and Prohibited Parking during rush hour
-
-#Remove from workspace
-rm(Tickets.per.Hour)
 ```
 
 ```{r Distribution of each Violation by type and hour, tidy=T, message=F, }
@@ -113,18 +111,16 @@ ggplot(tickets) + geom_histogram(mapping = (aes(x = Citation.Issue.Hour)), fill 
 ###Do TOLE violations vary by year? 
 ```{r Violations by year}
 #Violations broken down by year
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge", color="black") + coord_flip() + xlab("Violation") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Number of Tickets by Violation and Year of Citation") + labs(fill = "Citation Issue Year") 
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge") + coord_flip() + xlab("Violation") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Number of Tickets by Violation and Year of Citation") + labs(fill = "Citation Issue Year") 
 ```
 
+
 #How does Fine Amount vary?
+
 ```{r Fine Amount, tidy=T, message=F}
 table(tickets$Fine.Amount)
-fine.plot <- ggplot(data = tickets) + geom_histogram(mapping = aes(x = tickets$Fine.Amount), fill = "salmon", color="black")
+fine.plot <- ggplot(data = tickets) + geom_histogram(mapping = aes(x = tickets$Fine.Amount), fill = "salmon")
 fine.plot + xlab("Fine Amount") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Histogram of Fine Amount") 
-#Because the distribution of fine amount has several high-end outliers, we should be using the median as our measure of central tendency. This is even more clear when comparing the difference between the mean and median (112.7 and 85). 
-median(tickets$Fine.Amount)
-mean(tickets$Fine.Amount)
-
   ##By Violation
 fine.plot + facet_wrap(~ tickets$Violation) + xlab("Fine Amount") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Histogram of Fine Amount by Violation")
   ## It is clear that tickets have a low fine amount and high fine amount. Is it time of day,      weekday vs weekend, year, etc.? Let's make a factor variable to check this
@@ -142,7 +138,7 @@ tickets$Fine.Level <- as.factor(tickets$Fine.Level)
 tickets$Fine.Level <- relevel(tickets$Fine.Level, "Low")
   ##Generate table
 table(tickets$Fine.Level)
-fine.plot2 <- ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Fine.Level), fill = "salmon", color="black")
+fine.plot2 <- ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Fine.Level), fill = "salmon")
 fine.plot2 + xlab("Fine Level") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Fine Level") 
   ##Fine level by Violation
 fine.plot2 + facet_wrap(~ tickets$Violation) + xlab("Fine Level") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Fine Level by Violation")
@@ -154,7 +150,7 @@ rm(fine.plot2)
 ###Fine Level by Hour of Citation 
 ```{r Fine level by Hour, tidy=T, message=F}
 #Plot Fine level by Hour
-fine.plot3 <- ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Hour), fill = "salmon", color="black")
+fine.plot3 <- ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Hour), fill = "salmon")
 fine.plot3 + facet_wrap(~ tickets$Fine.Level) + xlab("Fine Level") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Fine Level by Hour of Citation")
   ##******High Fine.Level seems to spike at 4 and 5 pm. Is that during Rush Hour? but there is a similar spike in Low Fine.Level too*******
 
@@ -165,26 +161,26 @@ rm(fine.plot3)
 ###Fine Level by weekday and weekend 
 ```{r Fine level by weekday/weekend, tidy=T, message=F}
 #Plot Fine level by weekday vs weekend
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Weekday), fill = "salmon", color="black") + facet_wrap(~ tickets$Fine.Level) + xlab("Fine Level") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Fine Level by Weekday and Weekend")
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Weekday), fill = "salmon") + facet_wrap(~ tickets$Fine.Level) + xlab("Fine Level") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Fine Level by Weekday and Weekend")
   ##Does not seem to be a correlation 
 ```
 
 ###Fine Level by day of week
 ```{r Fine level by day of week, tidy=T, message=F}
 #Plot Fine level by day of week
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.DayOfWeek), fill = "salmon", color="black") + facet_wrap(~ tickets$Fine.Level) + xlab("Fine Level") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Fine Level by Day of the Week")
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.DayOfWeek), fill = "salmon") + facet_wrap(~ tickets$Fine.Level) + xlab("Fine Level") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Fine Level by Day of the Week")
 ```
 
 ###Fine Level by Month
 ```{r Fine level by month, tidy=T, message=F}
 #Plot fine level by month 
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Month), fill = "salmon", color="black") + facet_wrap(~ tickets$Fine.Level) + xlab("Fine Level") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Fine Level by Month")
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Month), fill = "salmon") + facet_wrap(~ tickets$Fine.Level) + xlab("Fine Level") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Fine Level by Month")
 ```
 
 ###Fine level by Year
 ```{r Fine level by year, tidy=T, message=F}
 #Plot fine level by year
-ggplot(data = tickets) + geom_bar(mapping = aes(x = as.factor(tickets$Citation.Issue.Year)), fill = "salmon", color="black") + facet_wrap(~ tickets$Fine.Level) + xlab("Fine Level") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Fine Level by Year")
+ggplot(data = tickets) + geom_bar(mapping = aes(x = as.factor(tickets$Citation.Issue.Year), fill = "salmon")) + facet_wrap(~ tickets$Fine.Level) + xlab("Fine Level") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Fine Level by Year")
 ```
 
 It looks like they introduced "High" level fines in 2014 as it is the only year in the dataset that a "High" fine level occurs.
@@ -236,13 +232,13 @@ rm(fine_by_year_viol)
 ```{r Citation status, tidy=T, message=F}
 #Citation Status
 table(tickets$Citation.Status)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Status), fill = "salmon", color="black") + xlab("Citation Status") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Citation Status")  
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Status), fill = "salmon") + xlab("Citation Status") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Citation Status")  
   ##Most are closed. Which ones are still open though?
 ```
 
 ##Citation status by year
 ```{r Status by year, tidy=T, message=F}
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Status), fill = "salmon", color="black") + xlab("Citation Status") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Citation Status by Year") + facet_wrap(~ as.factor(tickets$Citation.Issue.Year))
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Status), fill = "salmon") + xlab("Citation Status") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Citation Status by Year") + facet_wrap(~ as.factor(tickets$Citation.Issue.Year))
   ##Not make sense to look at fine level or others like that
 ```
 
@@ -252,7 +248,7 @@ ggplot(data = tickets) + geom_point(mapping = (aes(x = tickets$Citation.Status, 
 ```
 
 ```{r Status by Amount due 2, tidy=T, message=F}
-ggplot(data = tickets) + geom_boxplot(aes(x = tickets$Citation.Status, y = tickets$Amount.Due)) + xlab("Citation Status") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Boxplot of Citation Status by Amount Due") + ylab("Amount Due")
+ggplot(data = tickets) + geom_boxplot(aes(x = tickets$Citation.Status, y = tickets$Amount.Due)) + xlab("Citation Status") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Dotplot of Citation Status by Amount Due")
 ```
 
 ###Checking Fine amount vs Amount Due by Citation Status
@@ -260,65 +256,67 @@ ggplot(data = tickets) + geom_boxplot(aes(x = tickets$Citation.Status, y = ticke
 ggplot(data = tickets) + geom_point(mapping = (aes(x = tickets$Fine.Amount, y = tickets$Amount.Due, color = tickets$Citation.Status))) + xlab("Fine Amount") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Dot plot of Fine Amount vs Amount Due by Citation Status") + ylab("Amount Due")
 ```
 
-#Amount Paid
-```{r Amount paid, tidy=T, message=F}
-#Amount paid histogram
-ggplot(data = tickets) + geom_histogram(mapping = aes(x = tickets$Amount.Paid), fill = "salmon", color = "black") + xlab("Amount Paid") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Amount Paid") 
-#Why are some amounts paid so low? Are these cases where status is open still?
-```
-
 ##Amount Paid vs Fine Amount
 ```{r Amount paid vs fine amount, tidy=T, message=F}
 #Scatterplot of amount paid and fine amount
 ggplot(data = tickets) + geom_point(mapping = aes(x = tickets$Amount.Paid, y=tickets$Fine.Amount,color = tickets$Fine.Level)) + xlab("Amount Paid") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Amount Paid") + labs(color="Fine Level")
-
-#Correlation
-cor(tickets$Fine.Amount,tickets$Amount.Paid)
 ```
 
-There is a surprisingly small and negative correlation between the fine amount and the amount paid. 
-
-##Amount Paid by Citation Status
-```{r Amount paid by status, tidy=T, message=F}
+```{r EDA of Money and Violation variables, tidy=T, message=F}
+#Amount paid
+table(tickets$Amount.Paid)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Amount.Paid))
+  #Why are some amounts paid so low? Are these cases where status is open still? 
 tickets_by_paid_status <- tickets %>% group_by(Amount.Paid, Citation.Status) 
+summary(tickets_by_paid_status)
+ggplot(data = tickets_by_paid_status) + geom_bar(mapping = aes(x = tickets$Amount.Paid, fill = tickets$Citation.Status))
+  #Most of these ones are still open but it still doesn't make sense
+  #What types of violations are these????
+tickets_paid_viol <- tickets %>% group_by(Amount.Paid, Violation)
+ggplot(data = tickets_paid_viol) + geom_bar(mapping = aes(x = tickets$Amount.Paid, fill = tickets$Violation))
+  #Looks like prices of violations vary. By time? Weekend? 
 
-ggplot(data = tickets_by_paid_status) + geom_histogram(mapping = aes(x = tickets$Amount.Paid, fill = tickets$Citation.Status), color="black") + xlab("Amount Paid") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Amount Paid by Citation Status") + labs(fill="Citation Status")
+#Amount Due
+table(tickets$Amount.Due)
+ggplot(data = tickets) + geom_histogram(mapping = aes(x = tickets$Amount.Due, fill = tickets$Violation))
+  ##The vast majority of tickets are fully paid off
+head(table(tickets$Amount.Due)) 
+  ##By citations status?
+tickets_due_status <- tickets %>% group_by(Amount.Due, Citation.Status)
+summary(tickets_due_status)
+ggplot(data = tickets_due_status) + geom_histogram(mapping = aes(x = tickets$Amount.Due, fill = tickets$Citation.Status))
+  #That seems to tell the whole story
 
-#Remove from workspace
-rm(tickets_by_paid_status)
-```
-
-It makes sense that most of the cases of people paying small amounts or nothing at all are still open. 
-
-# Paid on Time
-```{r Paid on Time, tidy=T, message=F}
+#Paid on time
 table(tickets$Paid.On.Time)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = as.factor(tickets$Paid.On.Time)), fill="salmon", color="black") + xlab("Paid on Time") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Tickets Paid on Time") 
+ggplot(data = tickets) + geom_bar(mapping = aes(x = as.factor(tickets$Paid.On.Time)))
+
 ```
 
-#Time Variables
 ```{r EDA of Time variables, tidy=T, message=F}
 # Month
 table(tickets$Citation.Issue.Month)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Month), fill="salmon", color="black") + xlab("Citation Month") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Tickets by Month") 
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Month))
 
 # Year
 table(tickets$Citation.Issue.Year)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Year), fill="salmon", color="black")+ xlab("Citation Year") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Tickets by Year") 
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Year))
 
 # Day of Week 
 table(tickets$Citation.Issue.DayOfWeek)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.DayOfWeek), fill="salmon", color="black") + xlab("Citation Day of Week") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Tickets by Day of Week") 
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.DayOfWeek))
+# ******* Let's look at how we coded the Day of Week variable. This trend shoud be lower on Sunday ******
 
 # Weekday
 table(tickets$Citation.Issue.Weekday)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Weekday), fill="salmon", color="black")+ xlab("Citation Issued on Weekend or Weekday") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Tickets by Weekday or Weekend") 
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Weekday))
+# ******* Let's look at how we coded the Day of Week variable. This trend shoud be lower on Sunday ******
 
 #Hour 
 table(tickets$Citation.Issue.Hour)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Hour), fill="salmon", color="black")+ xlab("Citation Hour") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Tickets by Hour") 
-
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Hour))
 # People are getting boned during rush hour on the way home
+
 ```
 
 #Median Daily Revenue 
@@ -333,14 +331,44 @@ tickets_viol_median_rev <- tickets %>% group_by(Violation) %>% summarise(Median.
 
 #Calculate and plot the Median Daily Revenue by Violation type
 tickets_day_rev <- tickets %>% group_by(Violation, Citation.Issue.DayOfWeek) %>% summarise(Median.Daily.Revenue = median(Amount.Paid)*n())
-
-ggplot(data = tickets_day_rev) + geom_col(mapping = aes(x = tickets_day_rev$Citation.Issue.DayOfWeek, y= Median.Daily.Revenue), fill="Salmon", color="black") + xlab("Citation Day of Week") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Median Daily Revenue by Violation") + ylab("Median Daily Revenue") + facet_wrap(~Violation) + scale_y_continuous(label=comma)  + geom_hline(data=tickets_viol_median_rev, aes(yintercept = tickets_viol_median_rev$Median.Violation.Revenue))
 ```
-
 
 ##How have the prices of TOLE violations changed over time?
 ```{r prices change over time EDA, tidy=T, message=F}
+#summary stats and bar chart of fine amount
+summary(tickets$Violation)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation))
+  #Violations broken down by year
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge")
 
+#Because the distribution of fine amount has several high-end outliers, we should be using the median as our measure of central tendency. This is even more clear when comparing the difference between the mean and median (112.7 and 85). 
+median(tickets$Fine.Amount)
+mean(tickets$Fine.Amount)
+median(tickets$Fine.Amount)
+mean(tickets$Fine.Amount)
+
+# find the median fine amount by violation
+fine_by_viol <- tickets %>% 
+  group_by(Violation) %>% 
+  summarise(median = median(Fine.Amount))
+fine_by_viol
+
+#Maybe put these results in a table?
+
+# find the median fine amount by year
+fine_by_year <- tickets %>%
+  group_by(Citation.Issue.Year) %>% 
+  summarise(median = median(Fine.Amount))
+head(fine_by_year)
+
+#plot median fine amount by year to see trend in prices over time
+fine.plot.year <- ggplot(data = fine_by_year, aes(x = Citation.Issue.Year, y = median))
+fine.plot.year <- fine.plot.year + geom_line() + geom_point() 
+fine.plot.year
+# *******Median fine amount per year seems to have increased significantly over time. Index with inflation to see if this is really the case?*******
+
+ggplot(data = tickets_day_rev) + geom_col(mapping = aes(x = tickets_day_rev$Citation.Issue.DayOfWeek, y= Median.Daily.Revenue), fill="Salmon", color="black") + xlab("Citation Day of Week") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Median Daily Revenue by Violation") + ylab("Median Daily Revenue") + facet_wrap(~Violation) + scale_y_continuous(label=comma)  + geom_hline(data=tickets_viol_median_rev, aes(yintercept = tickets_viol_median_rev$Median.Violation.Revenue))
+```
 
 ##Are more citations issued on certain days of the week? Are more tickets issued on weekdays than weekends?
 
@@ -507,4 +535,3 @@ a <- Violation.Rush$Total_During_Rush / (Violation.Rush$Total_During_Rush + Viol
 #a <- round(a, 3)
 
 ```
-
