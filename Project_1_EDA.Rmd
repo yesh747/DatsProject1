@@ -226,35 +226,11 @@ fine_by_year_viol <- tickets %>%
   group_by(Violation,Citation.Issue.Year) %>% 
   summarise(median = median(Fine.Amount))
 ##Plot
-ggplot(data = fine_by_level_viol,mapping = aes(x = Violation, y=median, fill=Fine.Level), position="dodge") + geom_col() + xlab("Citation Year") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Median Fine Amount by Citation Year") + ylab('Median Fine Amount') 
+ggplot(data = fine_by_year_viol,mapping = aes(x = Citation.Issue.Year, y=median), position="dodge") + geom_point() + xlab("Citation Year") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Median Fine Amount by Citation Year") + ylab('Median Fine Amount') + geom_line() + facet_wrap(~Violation)
 
 #remove from workspace
-rm(fine_by_level_viol)
+rm(fine_by_year_viol)
 ```
-
-
-
-
-```{r Median Fine Amount, tidy=T, message=F}
-
-
-
-
-
-
-
-
-
-
-#plot fine by year and violation to see change and trends
-fine.plot.yv <- ggplot(data = fine_by_year_viol, aes(x = Citation.Issue.Year, y = median))
-fine.plot.yv <- fine.plot.yv + geom_line() + geom_point() 
-fine.plot.yv <- fine.plot.yv + facet_wrap(~ Violation)
-fine.plot.yv
-
-rm(fine_by_year, fine_by_viol, fine.plot.year, fine.plot.yv)
-```
-
 
 #Citation Status
 ```{r Citation status, tidy=T, message=F}
