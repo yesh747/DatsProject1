@@ -5,6 +5,10 @@ date: "March 5, 2017"
 output: html_document
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
 ----------------------------------------------------------------------
 
 ```{r setup, include=FALSE}
@@ -35,11 +39,16 @@ ggplot(data=tickets, aes(Violation)) + geom_bar()
 
 ##What TOLE violations produce the most revenue?
 ```{r violations most revenue, tidy=T, message=FALSE, echo=FALSE}
+tickets_by_viol <- tickets %>% group_by(Violation) %>% summarise(Total.Revenue = sum(Amount.Paid))
+ggplot(tickets_by_viol, aes(x=Violation, y=Total.Revenue)) + geom_col()
+
+
+
 #Create Total Revenue variable for each violation
 tickets.violation <- aggregate(tickets[,c("Amount.Paid")], by=list(tickets$Violation), FUN=sum)
 tickets.violation <- rename(tickets.violation, Violation = Group.1, Total.Revenue = x)
 #Plot Revenue by violation
-ggplot(tickets.violation, aes(x=Violation, y=Total.Revenue)) + geom_bar(stat="identity") + coord_flip() + geom_text(aes(label=Total.Revenue))
+ggplot(tickets.violation, aes(x=Violation, y=Total.Revenue)) + geom_bar(stat="identity")  + coord_flip() +  geom_text(aes(label=Total.Revenue))
   ##Graph for total revenue of violations looks pretty similar to graph of violation counts above
 
 #Remove total revenue variable
@@ -393,7 +402,7 @@ plot(NonRushTotals, dbinom(NonRushTotals, 30, 0.25), type = "h")
 
 ## What Violations occur more during Rush Hour and what occur more during Off Hours?
 
-```{r Violation Type per Hour2}
+```{r Violation Type per Hour}
 # Proportion of Violation Type per Hour
 
 Tickets.per.Hour <- tickets %>% group_by(Citation.Issue.Hour) %>% summarise(count = n())
