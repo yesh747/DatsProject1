@@ -146,7 +146,9 @@ ggplot(tickets, aes(x = Citation.Issue.Hour, fill = Violation)) + geom_bar(posit
 This graph shows that Double Parking (`DBL PARK`) and Bus Zone (`BUS ZONE`) Violations compromise most non-rush hour violations, while Towaway Zone (`TWAWY ZN#1` and `TWAWY ZONE`) and Downtown Towaway Zone (`PRK PROHIB`) Violations make up most of rush hour violations.
 
 
-We further investigated which violations produce the most revenue. On a daily basis, Towaway Zone 1 produces the most revenue---even when broken down by weekdays and weekends.
+
+We further investigated which violations produce the most revenue. On a daily basis, Towaway Zone 1 produces the most revenue. even when broken down by weekdays and weekends.
+
 
 
 
@@ -199,7 +201,7 @@ ggplot(data = tickets_day_rev) + geom_col(mapping = aes(x = tickets_day_rev$Cita
 ```
 
 
-From the graph of "Distribution of Median Daily Revenue," we see that Tuesday appears to generate more revenue than the median daily revenue. However, Friday and Saturday appear to generate significantly less revenue than the median daily revenue. When broken down by violation type in "Distribution of Median Daily Revenue by Violation," Tuesday's high overall value is not able to be attributed to any single violation. However, the low values for Friday and Saturday can be attributed to their corresponding low median daily revenues when compared to other violations---with the exception of `DBL PARK` and `BUS ZONE` which seem consistent across all days. Also, `TWAWY ZN#1` has a notably higher than median revenue generation on Monday.
+From the graph of "Distribution of Median Daily Revenue," we see that Tuesday appears to generate more revenue than the median daily revenue. However, Friday and Saturday appear to generate significantly less than median daily revenue. When broken down by violation type in "Distribution of Median Daily Revenue by Violation", Tuesday's high overall value is not able to be visually attributed to any single violation. However, Friday and Saturday can be attributed to below median revenue daily revenue in generation in all violations except `DBL PARK` and `BUS ZONE`, which both seem consistent across all days. Also, `TWAWY ZN#1` has a notably higher than median revenue generation on Monday.
 
 We then decided to calculate the variance of the median daily revenue for citations from the average median daily revenue from citations.
 
