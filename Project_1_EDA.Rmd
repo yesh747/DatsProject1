@@ -34,14 +34,14 @@ tickets <- data.frame(read.csv("tickets.csv", header=T, sep=','))
 ```{r Most common violations, tidy=T, message=FALSE, echo=FALSE}
 table(tickets$Violation)
 #Plot violations by count 
-ggplot(data=tickets) + geom_bar(mapping = (aes(Violation)), fill = "blue", color = "black") 
+ggplot(data=tickets) + geom_bar(mapping = (aes(Violation)), fill = "salmon") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Number of Tickets by Violation")
 ```
 
 ##What TOLE violations produce the most revenue?
 ```{r violations most revenue, tidy=T, message=FALSE, echo=FALSE}
 #tickets by viol and summed by amount paid
 tickets_by_viol <- tickets %>% group_by(Violation) %>% summarise(Total.Revenue = sum(Amount.Paid))
-ggplot(tickets_by_viol) + geom_col(mapping = aes(x=Violation, y=Total.Revenue), fill = "blue", color = "black") + scale_y_continuous(labels = comma)
+ggplot(tickets_by_viol) + geom_col(mapping = aes(x=Violation, y=Total.Revenue), fill = "salmon") + scale_y_continuous(labels = comma) + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Total Revenue of Tickets by Violation") + ylab("Total Revenue")
   ##Graph for total revenue of violations looks pretty similar to graph of violation counts above
 
 #Remove dataframe
@@ -57,10 +57,9 @@ tickets.violWeekday <- rename(tickets.violWeekday, Violation = Group.1, Weekday 
   ##Create new column for daily average revenue: IF day == weekday, then divide TR by 5; ELSE divide by 2
 tickets.violWeekday$Daily.Average.Revenue <- ifelse(tickets.violWeekday$Weekday == 1, tickets.violWeekday$Total.Revenue/5, tickets.violWeekday$Total.Revenue/2)
   ## IF Weekday == 0, weekend; ELSE weekday
-tickets.violWeekday$Weekday <- ifelse(tickets.violWeekday$Weekday == 0, "Weekend", "Weekday")
 
 p <- ggplot(tickets.violWeekday, aes(x=Violation, y=Daily.Average.Revenue, fill=Weekday))
-p + geom_bar(stat="identity") + coord_flip()
+p + geom_col() + coord_flip() + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Daily Average Revenue by Violation") + ylab("Daily Average Revenue") + scale_y_continuous(label = comma)
 
 rm(p, tickets.violWeekday)
 ```
