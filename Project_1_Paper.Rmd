@@ -242,4 +242,7 @@ chi[c('observed', 'expected')]
 The $\chi^2$ test with `r chi$parameter` degrees of freedom resulted in a $\chi^2$ statistic of `r round(chi$statistic,3)` and a p-value of approximately `r round(chi$p.value,10)`. Thus, we reject the null hypothesis that the violation types are *not* independent of the days of the week. 
 
 # Conclusion
-We found that the 
+We found that Tuesday generates significantly more than the median Daily Revenue---even after controlling for type of violation---while revenue for Friday and Saturday falls precipitously. In the future, we hope to analyze why Friday and Saturday produce significantly lower revenue but Sunday ticket revenue stays fairly consistent with the other days of the week. Furthermore, the $\chi^2$ test resoundingly showed that violation types are *not* independent of the days of the week. 
+
+Another question that prompted further interest is the data seem to show a small and even negative correlation between the amount of the fine and the amount paid. This is counterintuitive and even the opposite of our hypothesized relationship between the two variables. This is most likely due to several factors that have not been accounted for in the dataset as we have controlled for all meaningful variables. 
+
