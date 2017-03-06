@@ -145,12 +145,9 @@ ggplot(tickets, aes(x = Citation.Issue.Hour, fill = Violation)) + geom_bar(posit
 
 This graph shows that Double Parking (`DBL PARK`) and Bus Zone (`BUS ZONE`) Violations compromise most non-rush hour violations, while Towaway Zone (`TWAWY ZN#1` and `TWAWY ZONE`) and Downtown Towaway Zone (`PRK PROHIB`) Violations make up most of rush hour violations.
 
-<<<<<<< HEAD
-\newpage
+
 We further investigated which violations produce the most revenue. On a daily basis, Towaway Zone 1 produces the most revenue---even when broken down by weekdays and weekends.
-=======
-We further investigated which violations produce the most revenue. On a daily basis, Towaway Zone 1 produces the most revenue. even when broken down by weekdays and weekends.
->>>>>>> origin/master
+
 
 
 ```{r EDA5, echo=FALSE, fig.height=3}
@@ -201,12 +198,8 @@ tickets_day_rev <- tickets %>% group_by(Violation, Citation.Issue.DayOfWeek) %>%
 ggplot(data = tickets_day_rev) + geom_col(mapping = aes(x = tickets_day_rev$Citation.Issue.DayOfWeek, y= Median.Daily.Revenue), fill="Salmon", color="black") + xlab("Citation Day of Week") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Median Daily Revenue by Violation") + ylab("Median Daily Revenue") + facet_wrap(~Violation) + scale_y_continuous(label=comma)  + geom_hline(data=tickets_viol_median_rev, aes(yintercept = tickets_viol_median_rev$Median.Violation.Revenue))
 ```
 
-<<<<<<< HEAD
-From the graph of "Distribution of Median Daily Revenue," we see that Tuesday appears to generate more revenue than the median daily revenue. However, Friday and Saturday appear to generate significantly less revenue than the median daily revenue. When broken down by violation type in "Distribution of Median Daily Revenue by Violation," Tuesday's high overall value is not able to be attributed to any single violation. However, the low values for Friday and Saturday can be attributed to their corresponding low median daily revenues when compared to other violations---with the exception of `DBL PARK` and `BUS ZONE` which seem consistent across all days. Also, `TWAWY ZN#1` has a notably higher than median revenue generation on Monday.
-=======
 
-From the graph of "Distribution of Median Daily Revenue," we see that Tuesday appears to generate more revenue than the median daily revenue. However, Friday and Saturday appear to generate significantly less than median daily revenue. When broken down by violation type in "Distribution of Median Daily Revenue by Violation", Tuesday's high overall value is not able to be visually attributed to any single violation. However, Friday and Saturday can be attributed to below median revenue daily revenue in generation in all violations except `DBL PARK` and `BUS ZONE`, which both seem consistent across all days. Also, `TWAWY ZN#1` has a notably higher than median revenue generation on Monday.
->>>>>>> origin/master
+From the graph of "Distribution of Median Daily Revenue," we see that Tuesday appears to generate more revenue than the median daily revenue. However, Friday and Saturday appear to generate significantly less revenue than the median daily revenue. When broken down by violation type in "Distribution of Median Daily Revenue by Violation," Tuesday's high overall value is not able to be attributed to any single violation. However, the low values for Friday and Saturday can be attributed to their corresponding low median daily revenues when compared to other violations---with the exception of `DBL PARK` and `BUS ZONE` which seem consistent across all days. Also, `TWAWY ZN#1` has a notably higher than median revenue generation on Monday.
 
 We then decided to calculate the variance of the median daily revenue for citations from the average median daily revenue from citations.
 
@@ -222,14 +215,10 @@ st$p.value
 
 ```
 
-<<<<<<< HEAD
+
 The mean daily median revenue1 is `r as.character(meanDailyMedianRevenue)`. The variance of the daily median revenue is `r as.character(var(tickets_day_rev2$Median.Daily.Revenue))` and the standard deviation is `r as.character(round(sqrt(var(tickets_day_rev2$Median.Daily.Revenue))))`. This high standard deviation is caused by the low median daily revenues of Friday and Saturday. We considered using a t-test to determine which days of the week are significantly different from the mean, but because of a low sample size and the lack of a normal distribution[^shapiro], conducting a t-test would not have significant meaning.
 
 [^shapiro]:(reject the null hypothesis that the sample comes from a population with a normal distribution based on Shapiro Test of Normality where p = `r as.character(round(st$p.value),5)`) 
-=======
-
-The mean daily median revenue1 is `r as.character(meanDailyMedianRevenue)`. The variance of the daily median revenue is `r as.character(var(tickets_day_rev2$Median.Daily.Revenue))` and the standard deviation is `r as.character(round(sqrt(var(tickets_day_rev2$Median.Daily.Revenue))))`. This high standard deviation is due to the low median daily revenues of Friday and Saturday. We considered using the t-test to determine which days of the week are significantly different from the mean, but because of a low sample size and the lack of a normal distribution (reject the null hypothesis that the sample comes from a population with a normal distribution based on Shapiro Test of Normalcy where p = `r as.character(round(st$p.value),5)`), conducting a t-test would not have significant meaning.
->>>>>>> origin/master
 
 We decided to do a Chi-squared test in order to determine whether the violation type is independent of the day of the week. The following is the contignency table:
 
