@@ -262,7 +262,7 @@ ggplot(data = tickets) + geom_point(mapping = (aes(x = tickets$Fine.Amount, y = 
 ##Amount Paid vs Fine Amount
 ```{r Amount paid vs fine amount, tidy=T, message=F}
 #Scatterplot of amount paid and fine amount
-ggplot(data = tickets) + geom_point(mapping = aes(x = tickets$Amount.Paid, y=tickets$Fine.Amount,color = tickets$Fine.Level)) + xlab("Amount Paid") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Amount Paid") + labs(color="Fine Level")
+ggplot(data = tickets, mapping = aes(x = tickets$Amount.Paid, y=tickets$Fine.Amount,color = tickets$Fine.Level)) + geom_point() + xlab("Amount Paid") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Amount Paid") + labs(color="Fine Level") +geom_smooth(method=lm)
 
 # univariate regression
 summary(lm(formula = tickets$Amount.Paid ~ tickets$Fine.Amount))

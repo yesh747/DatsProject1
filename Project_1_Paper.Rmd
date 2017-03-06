@@ -239,6 +239,7 @@ chi <- chisq.test(tickets$Violation, tickets$Citation.Issue.DayOfWeek)
 chi[c('observed', 'expected')]
 ```
 
+
 The $\chi^2$ test with `r chi$parameter` degrees of freedom resulted in a $\chi^2$ statistic of `r round(chi$statistic,3)` and a p-value of approximately `r round(chi$p.value,10)`. Thus, we reject the null hypothesis that the violation types are *not* independent of the days of the week. 
 
 # Conclusion
