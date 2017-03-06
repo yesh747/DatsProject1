@@ -220,7 +220,7 @@ The mean daily median revenue1 is `r as.character(meanDailyMedianRevenue)`. The 
 
 [^shapiro]:(reject the null hypothesis that the sample comes from a population with a normal distribution based on Shapiro Test of Normality where p = `r as.character(round(st$p.value),5)`) 
 
-We decided to do a Chi-squared test in order to determine whether the violation type is independent of the day of the week. The following is the contignency table:
+We decided to do a $\chi^2$ test in order to determine whether the violation type is independent of the day of the week. The following is the contignency table:
 
 
 ```{r Analysis2, echo=FALSE, fig.height=3}
@@ -228,7 +228,7 @@ chi <- chisq.test(tickets$Violation, tickets$Citation.Issue.DayOfWeek)
 chi[c('observed', 'expected')]
 ```
 
-The Chi-squared test with `r chi$parameter` degrees of freedom resulted in an X-squared statistic of `r round(chi$statistic,3)` and a p-value of `r round(chi$p.value,10)`. This means that the violation types are independent of the days of the week. 
+The $\chi^2$ test with `r chi$parameter` degrees of freedom resulted in a $\chi^2$ statistic of `r round(chi$statistic,3)` and a p-value of `r round(chi$p.value,10)`. This means that the violation types are independent of the days of the week. 
 
 # Conclusion
 
