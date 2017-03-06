@@ -15,7 +15,6 @@ library(scales)
 
 rawTickets <- data.frame(read.csv('Muni_Driver_Reported_Transit_Only_Lane_Violations.csv', header = T, sep = ","))
 tickets <- read.csv("tickets.csv")
-
 ```
 
 
@@ -73,13 +72,15 @@ According to Michael Rhodes, San Francisco's transit-only lane violations are ge
 
 ## Broad Questions
 
-The TOLE program was implemented in 2008 as a pilot set to expire in 2012, unless extended upon an evaluation in 2011. In 2011, the City of San Francisco decided to vote to implement the TOLE program permanently. Therefore, understanding the effects and dimensions of the program are vital to constantly improving it. We believed in an exploratory analysis that looking at revenue generation would be in ideal means of understanding this program. Revenue optimization both increases funding for the state and creates economic incentive for drivers' to avoid citations. Under properly placed incentives and fine structures, revenue optimization can lead to ideal traffic outcomes.
+The TOLE program was implemented in 2008 as a pilot set to expire in 2012, unless extended upon an evaluation in 2011. In 2011, the City of San Francisco decided to vote to implement the TOLE program permanently. Therefore, understanding the effects and dimensions of the program are vital to constantly improving it. We believed in an exploratory analysis that looking at revenue generation would be in ideal means of understanding this program. Revenue optimization both increases funding for the state and creates economic incentive for drivers' to avoid citations. Under properly placed incentives and fine structures, revenue optimization can lead to ideal traffic outcomes.[^4]
+
+[^4]: Official California Legislative Information, "AB 1041 Assembly Bill---Bill Analysis," Assembly Third Reading, April 27, 2011, <http://www.leginfo.ca.gov/pub/11-12/bill/asm/ab_1001-1050/ab_1041_cfa_20110429_113836_asm_floor.html>
 
 _**Broad Question:** Under what paramters does the TOLE program optimize TOLE program revenues?_
 
-We started with this broad question before choosing a full SMART (Specific, Measurable, Answerable, Relevant, Time bound) question to allow EDA to inform the development of the SMART question.
+We started with this broad question before choosing a fully established SMART (Specific, Measurable, Answerable, Relevant, Time bound) question to allow EDA to inform the development of the SMART question.
 
-Source: http://www.leginfo.ca.gov/pub/11-12/bill/asm/ab_1001-1050/ab_1041_cfa_20110429_113836_asm_floor.html
+Source: 
 
 ```{r citation3}
 print("Cite the above sources properly")
