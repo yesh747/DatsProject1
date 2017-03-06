@@ -70,7 +70,7 @@ According to Michael Rhodes, San Francisco's transit-only lane violations are ge
 
 [^3]: Michael Rhodes, "Violations in SF’s Transit-Only Lanes Rampant and Rarely Enforced," StreetsBlogSF, August 11, 2009, <http://sf.streetsblog.org/2009/08/11/violations-in-sfs-transit-only-lanes-rampant-and-rarely-enforced/>
 
-## Broad Questions
+## Broad Question
 
 The TOLE program was implemented in 2008 as a pilot set to expire in 2012, unless extended upon an evaluation in 2011. In 2011, the City of San Francisco decided to vote to implement the TOLE program permanently. Therefore, understanding the effects and dimensions of the program are vital to constantly improving it. We believed in an exploratory analysis that looking at revenue generation would be in ideal means of understanding this program. Revenue optimization both increases funding for the state and creates economic incentive for drivers' to avoid citations. Under properly placed incentives and fine structures, revenue optimization can lead to ideal traffic outcomes.[^4]
 
@@ -161,8 +161,9 @@ p + geom_col() + coord_flip() + theme(plot.title = element_text(hjust = 0.5)) + 
 rm(p, tickets.violWeekday)
 ```
 
-We saw that there was a potential for certain days of the week to generate more revenue than others so we decided to focus on how revenue can vary based on each day of the week. Understanding the deviation of mean revenue for weekday from the mean daily revenue is an ideal starting point for further analysis. If deviation is present, then future work could examine variation based on violation type, time of day, rush hour vs non-rush hour. Additionally, using median is justified to account for the biasing effect of the uneven bimodal distribution of fine amounts (the high and low fines) and outher outliers. Ideally, if the dataset could be connected to traffic flow/congestion rate data, then this analysis could be examined to better understand the impact of this program on actual traffic flows. Therefore, we have settled on the SMART question:
+We saw that there was a potential for certain days of the week to generate more revenue than others so we decided to focus on how revenue can vary based on each day of the week. Understanding the deviation of mean revenue for weekday from the mean daily revenue is an ideal starting point for further analysis. If deviation is present, then future work could examine variation based on violation type, time of day, rush hour vs non-rush hour. Additionally, using median is justified to account for the biasing effect of the uneven bimodal distribution of fine amounts (the high and low fines) and outher outliers. Ideally, if the dataset could be connected to traffic flow/congestion rate data, then this analysis could be examined to better understand the impact of this program on actual traffic flows. 
 
+###SMART Question 
 _**In the TOLE program, which days of the week earn significantly more or less median daily revenue than the overall median daily revenue?**_
 
 \newpage
