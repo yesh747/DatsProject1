@@ -22,13 +22,13 @@ tickets$Citation.Issue.DayOfWeek = factor(tickets$Citation.Issue.DayOfWeek,level
 # Background Information on Dataset
 
 ## General Information and Data Collection Process
-The Transit-Only Lane Enforcement (TOLE), run by the San Fransico Municipal Transportation Agency (SFMTA) from March 2008 to February 2015, is a pilot program to reduce obstruction of transit-only lanes through increased enforcement. Currently, private and commerical vehicles that drive and park in transit-only lanes can cause delays in bus service, increases in traffic congestion, and inconveniences to customers.
+The Transit-Only Lane Enforcement (TOLE), run by the San Francisco Municipal Transportation Agency (SFMTA) from March 2008 to February 2015, is a pilot program to reduce obstruction of transit-only lanes through increased enforcement. Currently, private and commercial vehicles that drive and park in transit-only lanes can cause delays in bus service, increases in traffic congestion, and inconveniences to customers.
 
-Under the TOLE program, all public buses are equipped with front-facing video cameras to capture the license plates of vehicles parked or stopped in a dedicated transit-lane. The vehicle's registered owner will then recieve the citation in the mail as a means to deter future transit-only lane violations. These citations and their accompanying details form the dataset we are examining.[^1]
+Under the TOLE program, all public buses are equipped with front-facing video cameras to capture the license plates of vehicles parked or stopped in a dedicated transit-lane. The vehicle's registered owner will then receive the citation in the mail as a means to deter future transit-only lane violations. These citations and their accompanying details form the dataset we are examining.[^1]
 
 [^1]:Data retrieved from Data.gov (<https://catalog.data.gov/dataset/muni-driver-reported-transit-only-lane-violations>) 
 
-San Fransico currently operates 26 miles of transit-only lanes with 160,000 daily passsengers and plans future expansion of 22 miles, so the TOLE program has strong potential for long-term impact by increasing the efficiency of the municipal transit system and potentially increasing municipal revenue temporarily as drivers adjust to the enforcement scheme.[^2]
+San Francisco currently operates 26 miles of transit-only lanes with 160,000 daily passengers and plans future expansion of 22 miles, so the TOLE program has strong potential for long-term impact by increasing the efficiency of the municipal transit system and potentially increasing municipal revenue temporarily as drivers adjust to the enforcement scheme.[^2]
 
 [^2]:San Francisco Municipal Transportation Agency, "Transit Only Lane Enforcement," SFMTA, accessed on February 24, 2017, <https://www.sfmta.com/sites/default/files/projects/2015/TOLE%20one%20pager_v3.pdf> 
 
@@ -57,15 +57,15 @@ The unit of observation was an individual citation for a transit-only lane viola
 
 ## Limitations of Dataset and Data Cleaning
 
-The limitations of the data include the timing of the implementation of the video camera citation system. While SFMTA claims 100% of their buses are equipped with cameras, they fail to indicate if the 100% implemention was at the start or end of the program. We believe there was a trial period at the beginning, so we decided to drop variables in 2008 when the program first started because there were only 154 citations issued that year, but typically several thousand citations issued in the following years. In addition our dataset lacked demographic controls for the regions where citations were issued. This means demographic factors could cause unobserved biases in our data. Similarly to the domestic controls, the dataset lacks observations of citations issued before the program was put in place, which prevents a before and after analysis. While out of the scope of this initial analysis, future analysis can map to the `Geom` variable in the dataset to census tracts to derive demographic information and could be used to compare to other citations.
+The limitations of the data include the timing of the implementation of the video camera citation system. While SFMTA claims 100% of their buses are equipped with cameras, they fail to indicate if the 100% implementation was at the start or end of the program. We believe there was a trial period at the beginning, so we decided to drop variables in 2008 when the program first started because there were only 154 citations issued that year, but typically several thousand citations issued in the following years. In addition our dataset lacked demographic controls for the regions where citations were issued. This means demographic factors could cause unobserved biases in our data. Similarly to the domestic controls, the dataset lacks observations of citations issued before the program was put in place, which prevents a before and after analysis. While out of the scope of this initial analysis, future analysis can map to the `Geom` variable in the dataset to census tracts to derive demographic information and could be used to compare to other citations.
 
-Some observations were missing key data. We decided to drop all observations with no `Geom` data, so that future geospatial and demographic analysis could be done (21 observations). We dropped all observations where `Citation.Status` was not specificied or "unapplied", as we determined "unapplied" was out of the scope of this project (84 observations). We dropped `Violations` where the listed violation was determined to be "No Violation" (1 observation) or occured less than or equal to 70 times (77 observations). We also dropped citations in the year 2015 to avoid biases in monthly and yearly analysis because only 2 months were included for 2015.
+Some observations were missing key data. We decided to drop all observations with no `Geom` data, so that future geospatial and demographic analysis could be done (21 observations). We dropped all observations where `Citation.Status` was not specified or "unapplied", as we determined "unapplied" was out of the scope of this project (84 observations). We dropped `Violations` where the listed violation was determined to be "No Violation" (1 observation) or occurred less than or equal to 70 times (77 observations). We also dropped citations in the year 2015 to avoid biases in monthly and yearly analysis because only 2 months were included for 2015.
 
 Overall, we dropped `r 191 + 78 + 84 + 21` of the original 17,178 observations in the dataset. This only accounts for `r round(((191 + 78 + 84 + 21)/17178)*100,2)` percent of the dataset. Thus, we are confident that we did not introduce any inherent biases to the data by dropping the aforementioned observations. 
 
 ## Literature Review
 
-Most of the the analyses found in the literature compared TOLE data to traffic flow rates. According to SFMTA, certain corridors experienced reductions in delays after TOLE implemention. Westbound Geary Street corridor saw a 3% daily and 7% afternoon reduction in delays. Westbound Stutter Street saw a 15% daily and 20% afternoon reduction in delays. However, this analysis lacks significant meaning because it cherry picks certain areas and also lacks a control comparison for other areas that may not have been in the TOLE program. Additionally, their analysis has some clear flaws as they state that of the 1700 different vehicles that recieved a citation from March to August of 2012, only 2% recieved a citation during the "same three-month period in 2013." Again this analysis lacks a control comparison and suffers a clear inconsistancy as March to August is a six-month period---not three month as SFMTA stated.[^2]
+Most of the the analyses found in the literature compared TOLE data to traffic flow rates. According to SFMTA, certain corridors experienced reductions in delays after TOLE implementation. Westbound Geary Street corridor saw a 3% daily and 7% afternoon reduction in delays. Westbound Stutter Street saw a 15% daily and 20% afternoon reduction in delays. However, this analysis lacks significant meaning because it cherry picks certain areas and also lacks a control comparison for other areas that may not have been in the TOLE program. Additionally, their analysis has some clear flaws as they state that of the 1700 different vehicles that received a citation from March to August of 2012, only 2% received a citation during the "same three-month period in 2013." Again this analysis lacks a control comparison and suffers a clear inconsistency as March to August is a six-month period---not three month as SFMTA stated.[^2]
 
 According to Michael Rhodes, San Francisco's transit-only lane violations are generally unenforced. While SFMTA had not released citation data prior to Rhodes' article in 2009, he cites anecdotal evidence from interviews with municipal drivers and San Francisco Police Department. Based on the municipality's weak analysis and the anecdotal evidence provided by Rhodes of the need for an effective transit-only lane violation enforcement scheme, a further analysis of municipality data must be conducted. While we cannot analyze a before and after comparison of the TOLE program on transit-only lane violations or traffic flow improvement, we can examine the distribution of violations by violation type, time of day, day of the week, and revenue potential.[^3]
 
@@ -99,7 +99,7 @@ We then examined if violations vary by year, and saw that `PRK PROHIB` and `PK P
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge", color="black") + coord_flip() + xlab("Violation") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Number of Tickets by Violation and Year of Citation") + labs(fill = "Citation Issue Year") 
 ```
 
-We decided to examine how fine amount varies by type of violation and discovered a bimodal distribution with a "high" and "low" level fine for each type of violation.
+We decided to examine how fine amount varies by type of violation and discovered a bi-modal distribution with a "high" and "low" level fine for each type of violation.
 
 
 ```{r EDA2, echo=FALSE, message=FALSE, tidy=TRUE, fig.height=3}
@@ -169,7 +169,7 @@ rm(p, tickets.violWeekday)
 ```
 
 
-We saw that there was potential for certain days of the week to generate more revenue than others so we decided to focus on how revenue can vary based on each day of the week. Understanding the deviation of median revenue for weekdays from the median daily revenue is an ideal starting point for further analysis. If deviation is present, then future work could examine variation based on violation type, time of day, rush hour vs non-rush hour, etc.. Additionally, using median is justified to account for the biasing effect of the uneven bimodal distribution of fine amounts (the high and low fines) and other outliers. Ideally, if the dataset could be connected to traffic flow/congestion rate data, then this analysis could be examined to better understand the impact of this program on actual traffic flows. 
+We saw that there was potential for certain days of the week to generate more revenue than others so we decided to focus on how revenue can vary based on each day of the week. Understanding the deviation of median revenue for weekdays from the median daily revenue is an ideal starting point for further analysis. If deviation is present, then future work could examine variation based on violation type, time of day, rush hour vs non-rush hour, etc.. Additionally, using median is justified to account for the biasing effect of the uneven bi-modal distribution of fine amounts (the high and low fines) and other outliers. Ideally, if the dataset could be connected to traffic flow/congestion rate data, then this analysis could be examined to better understand the impact of this program on actual traffic flows. 
 
 
 ##SMART Questions 
@@ -231,7 +231,7 @@ The mean daily median revenue1 is `r as.character(meanDailyMedianRevenue)`. The 
 
 ### Analysis of Violation Type and Day of the Week: $\chi^2$ Test of Independence 
 
-We decided to do a $\chi^2$ test in order to determine whether the violation type is independent of the day of the week. The following is the contignency table:
+We decided to do a $\chi^2$ test in order to determine whether the violation type is independent of the day of the week. The following is the contingency table:
 
 
 ```{r Analysis2, echo=FALSE, fig.height=3}
@@ -239,11 +239,10 @@ chi <- chisq.test(tickets$Violation, tickets$Citation.Issue.DayOfWeek)
 chi[c('observed', 'expected')]
 ```
 
-
 The $\chi^2$ test with `r chi$parameter` degrees of freedom resulted in a $\chi^2$ statistic of `r round(chi$statistic,3)` and a p-value of approximately `r round(chi$p.value,10)`. Thus, we reject the null hypothesis that the violation types are *not* independent of the days of the week. 
 
 # Conclusion
 We found that Tuesday generates significantly more than the median Daily Revenue---even after controlling for type of violation---while revenue for Friday and Saturday falls precipitously. In the future, we hope to analyze why Friday and Saturday produce significantly lower revenue but Sunday ticket revenue stays fairly consistent with the other days of the week. Furthermore, the $\chi^2$ test resoundingly showed that violation types are *not* independent of the days of the week. 
 
-Another question that prompted further interest is the data seem to show a small and even negative correlation between the amount of the fine and the amount paid. This is counterintuitive and even the opposite of our hypothesized relationship between the two variables. This is most likely due to several factors that have not been accounted for in the dataset as we have controlled for all meaningful variables. 
+Another question that prompted further interest is the data seem to show a small and even negative correlation between the amount of the fine and the amount paid. This is counter-intuitive and even the opposite of our hypothesized relationship between the two variables. This is most likely due to several factors that have not been accounted for in the dataset as we have controlled for all meaningful variables. 
 
