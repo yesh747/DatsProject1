@@ -7,6 +7,10 @@ output:
 ---
 
 ```{r loadData, include =FALSE}
+knitr::opts_chunk$set(fig.pos = 'H')
+
+library(ggplot2)
+library(dplyr)
 
 rawTickets <- data.frame(read.csv('Muni_Driver_Reported_Transit_Only_Lane_Violations.csv', header = T, sep = ","))
 tickets <- read.csv("tickets.csv")
@@ -32,24 +36,23 @@ San Fransico currently operates 26 miles of transit-only lanes with 160,000 dail
 The unit of observation was an individual citation for a transit-only lane violation reported by municipal drivers under the TOLE program, and the raw dataset contains the following variables regarding the transit-only lane violations:
 
 * `Object.ID` -- Unique key that corresponds to each observation
-* `Ticket.Number` -- Unique number that corresponds to each ticket catalogued with the Superior Court of San Francisco
+* `Ticket.Number` -- Unique number that corresponds to each ticket cataloged with the Superior Court of San Francisco
 * `Citation.Issue.Date` -- The date (MM/DD/YY) that the traffic only lane violation citation was issued
 * `Citation.Issue.Month` -- The month (MM) that the traffic only lane violation citation was issued; This column was completely blank when downloaded
 * `Citation.Issue.Time` -- The time of day (HH:MM) PST that the traffic only lane violation citation was issued
 * `Location` -- The street address where the traffic only lane violation citation was issued
 * `Violation.Code` -- A code that corresponds to the type of traffic only lane violation that was committed to warrant issuing a citation
 * `Violations` -- Description of the traffic only lane violation issued in the citation
-* `Fine.Amount` -- The dollar amount of to be paid for the traffic only lane violation
+* `Fine.Amount` -- The dollar amount of to be paid for the traffic only lane violation. Mean: `r round(mean(tickets$Fine.Amount),2)` USD.
 * `Citation.Status` -- Status of the citation (Open, Closed, Unapplied)
-* `Amount.Paid` -- The dollar amount paid for the traffic only lane violation
-* `Amount.Due` -- Outstanding balance for the traffic only lane violation 
+* `Amount.Paid` -- The dollar amount paid for the traffic only lane violation. Mean: `r round(mean(tickets$Amount.Paid),2)` USD.
+* `Amount.Due` -- Outstanding balance for the traffic only lane violation. Mean: `r round(mean(tickets$Amount.Due),2)` USD.
 * `Suspend.Code` -- Code that represents reason for license suspension (Suspended until the driver goes to driving school, pays fine, too many points on license, etc.)
 * `Suspend.Process.Date` -- Date the license suspension goes into effect
 * `Suspend.Until.Date` -- Date the license suspension is over
 * `Disposition.Code` -- The city of San Francisco does not release disposition codes
 * `Last.Edited.Date` -- Date that represents the last date the corresponding observation was edited; This column was completely blank when downloaded
-* `Geom` -- The latitude and longitude (latitutde, longitude) of the traffic only lane violation 
-
+* `Geom` -- The latitude and longitude (latitude, longitude) of the traffic only lane violation 
 
 ## Limitations of Dataset and Data Cleaning
 
@@ -63,8 +66,7 @@ Overall, we dropped `r 191 + 78 + 84 + 21` of the original 17,178 observations i
 
 Most of the analysis compared TOLE data to traffic flow rates. According to SFMTA, certain corridors experienced reductions in delays after TOLE implemention. Westbound Geary Street corridor saw a 3% daily and 7% afternoon reduction in delays. Westbound Stutter Street saw a 15% daily and 20% afternoon reduction in delays. However, this analysis lacks significant meaning because it cherry picks certain areas and also lacks a control comparison for other areas that may not have been in the TOLE program. Additionally, their analysis has some clear flaws as they state that of the 1700 different vehicles that recieved a citation from March to August of 2012, only 2% recieved a citation during the "same three-month period in 2013." Again this analysis lacks a control comparison and suffers a clear inconsistancy as March to August is a six-month period---not three month as SFMTA stated.[^2]
 
-
-According to Michael Rhodes, San Francisco's transit-only lane violations are generally unenforced. While SFMTA had not released citation data prior to Rhodes' article in 2009, he cites anecdotal evidence from interviews with municipal drivers and San Francisco Police Department. Based on the municpality's weak analysis and the anecdotal evidence provided by Rhodes of the need for an effective transit-only lane violation enforcement scheme, a further analysis of munipality data must be conducted. While we cannot analyze a before and after comparison of the TOLE program on transit-only lane violations or traffic flow improvement, we can examine the distribution of violations by violation type, time of day, day of the week, and revenue potential.
+According to Michael Rhodes, San Francisco's transit-only lane violations are generally unenforced. While SFMTA had not released citation data prior to Rhodes' article in 2009, he cites anecdotal evidence from interviews with municipal drivers and San Francisco Police Department. Based on the municipality's weak analysis and the anecdotal evidence provided by Rhodes of the need for an effective transit-only lane violation enforcement scheme, a further analysis of municipality data must be conducted. While we cannot analyze a before and after comparison of the TOLE program on transit-only lane violations or traffic flow improvement, we can examine the distribution of violations by violation type, time of day, day of the week, and revenue potential.
 
 
 Source2: http://sf.streetsblog.org/2009/08/11/violations-in-sfs-transit-only-lanes-rampant-and-rarely-enforced/
@@ -87,16 +89,95 @@ Source: http://www.leginfo.ca.gov/pub/11-12/bill/asm/ab_1001-1050/ab_1041_cfa_20
 print("Cite the above sources properly")
 ```
 
-
-  * Research on program from "Description_of_TOLE_Program.pdf"
-  * Introduce 3 "Broad Questions"
-
+\newpage
 ## EDA & SMART Question
-  * Show EDA
-  * Show refinement into SMART Questions
+
+We first examined basic summary statistics involving our dataset. Our cleaned dataset had `r dim(tickets)[1]` observations (i.e. citations) and `r dim(tickets)[2]` variables. There were 5 violation:
+ * 'BUS ZONE' -- Parking in Bus Zone  -- `r table(tickets$Violation)["BUS ZONE"]` citations
+ * 'DBL Park' -- Double Parking -- `r table(tickets$Violation)["DBL PARK"]` citations
+ * 'PK PHB OTD' -- Tow-Away Zone - Outside Downtown Core  -- `r table(tickets$Violation)["PK PHB OTD"]` citations
+ * 'PRK PROHIB' -- Tow-Away Zone - Downtown Core  -- `r table(tickets$Violation)["PRK PROHIB"]` citations
+ * 'TWAWY ZN#1' -- Towaway Zone 1 and Towaway Zone  -- `r table(tickets$Violation)["TWAWY ZN#1"]` citations
+ * 'TWAWY ZONE' -- Towaway Zone  -- `r table(tickets$Violation)["TWAWY ZONE"]` citations
+
+We then examined if violations vary by year, and saw that `PRK PROHIB` and `PK PHB OTD` occur only in after 2013, while `TWAWY ZN#1` and `TWAWY ZONE` violations were issued only until 2013. 
+
+```{r EDA1, echo=FALSE}
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge") + coord_flip() + xlab("Violation") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Number of Tickets by Violation and Year of Citation") + labs(fill = "Citation Issue Year") 
+```
+
+\newpage
+We decided to examine how fine amount varies within each fine and discovered a bimodal distribution with a "high" and "low" fine.
+
+```{r EDA2, echo=FALSE, message=FALSE, tidy=TRUE}
+fine.plot <- ggplot(data = tickets) + geom_histogram(mapping = aes(x = tickets$Fine.Amount), fill="salmon")
+
+fine.plot + facet_wrap(~tickets$Violation) + xlab("Fine Amount") + theme(plot.title = element_text(hjust = 0.5)) + 
+    ggtitle("Histogram of Fine Amount by Violation")
+
+rm(fine.plot)
+```
+
+\newpage
+However, upon further examination, we saw there was no obvious difference in `Fine.Amount` when controlling for other factors like time of day:
+
+```{r EDA3, echo=FALSE, message=FALSE, tidy=TRUE}
+# Initialize new factor variable Fine.Level
+tickets$Fine.Level <- tickets$Fine.Amount
+tickets$Fine.Level <- ifelse(tickets$Fine.Amount < 175, "Low", "High")
+tickets$Fine.Level <- as.factor(tickets$Fine.Level)
+tickets$Fine.Level <- relevel(tickets$Fine.Level, "Low")
+## Generate table
+
+fine.plot3 <- ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Hour), 
+    fill = "salmon")
+fine.plot3 + facet_wrap(~tickets$Fine.Level) + xlab("Fine Level") + theme(plot.title = element_text(hjust = 0.5)) + 
+    ggtitle("Bar Chart of Fine Level by Hour of Citation")
+
+rm(fine.plot3)
+```
+
+\newpage
+We then began to shift our analysis towards looking at the interaction between time and revenue generated by fines. We looked at the distribution of different citations over time in a stacked bar plot:
+
+
+```{r EDA4, echo=FALSE, message=FALSE}
+
+ggplot(tickets, aes(x = Citation.Issue.Hour, fill = Violation)) + geom_bar(position = "fill") + 
+    scale_x_continuous(breaks = seq(0, 24, 1)) + xlab("Hour of Citation") + 
+    theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Stacked Bar Chart of Violations by Citation Issue Hour ")
+
+```
+
+This graph shows that Double Parking (`DBL PARK`) and Bus Zone (`BUS ZONE`) Violations comprimise most non-rush hour violations, while Tomaway Zone (`TWAWY ZN#1` and `TWAWY ZONE`) and Downtown Towaway Zone (`PRK PROHIB`) Violations make up most of rush hour violations.
+
+\newpage
+We then investigated which violations produce the most revenue. On a daily basis, Towaway Zone 1 produces the most revenue. even when broken down to weekdays and weekends.
+
+```{r EDA5, echo=FALSE}
+#Create variable that stores sum of apount paid by violation and weekday 
+tickets.violWeekday <- aggregate(tickets[,c("Amount.Paid")], by=list(tickets$Violation, tickets$Citation.Issue.Weekday), FUN=sum)
+  ##Rename the columns of tickets.violWeekday
+tickets.violWeekday <- rename(tickets.violWeekday, Violation = Group.1, Weekday = Group.2, Total.Revenue = x)
+  ##Create new column for daily average revenue: IF day == weekday, then divide TR by 5; ELSE divide by 2
+tickets.violWeekday$Daily.Average.Revenue <- ifelse(tickets.violWeekday$Weekday == 1, tickets.violWeekday$Total.Revenue/5, tickets.violWeekday$Total.Revenue/2)
+
+#Average Weekday and Weekend Revenue by Violation
+p <- ggplot(tickets.violWeekday, aes(x=Violation, y=Daily.Average.Revenue, fill=Weekday))
+p + geom_col() + coord_flip() + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Total Average Weekday and Weekend Revenue by Violation") + ylab("Daily Average Revenue")
+
+#Remove from Workspace
+rm(p, tickets.violWeekday)
+```
+
+We saw that there was a potential for certain days of the week to generate more revenue than others so we decided to focus on how revenue can vary based on each day of the week. Understanding the deviation of median revenue for weekday from the median daily revenue is an ideal starting point for further analysis. If deviation is present, then future work could examine variation based on violation type, time of day, rush hour vs non-rush hour. Additionally, using median is justified to account for the biasing effect of the uneven bimodal distribution of fine amounts (the high and low fines) and outher outliers. Ideally, if the dataset could be connected to traffic flow/congestion rate data, then this analysis could be examined to better understand the impact of this program on actual traffic flows. Therefore, we have settled on the SMART question:
+
+_**In the TOLE program, which days of the week earn significantly more or less median daily revenue than the overall median daily revenue?**_
+
 
 ## Answering the SMART Question
-  * 
+  * Bar graph, weekday (x-axis) vs median daily fine amount (y-axis) with fill on Violation Type
+  * Bar graph for each fine type
 
 # NOTES:
   * 
