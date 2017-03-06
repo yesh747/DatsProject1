@@ -34,7 +34,7 @@ tickets <- data.frame(read.csv("tickets.csv", header=T, sep=','))
 ```{r Most common violations, tidy=T, message=FALSE, echo=FALSE}
 table(tickets$Violation)
 #Plot violations by count 
-ggplot(data=tickets, aes(Violation)) + geom_bar() + coord_flip() + geom_text(stat="count", aes(label=..count..))
+ggplot(data=tickets, aes(Violation)) + geom_bar()
 ```
 
 ##What TOLE violations produce the most revenue?
@@ -209,10 +209,7 @@ summary(tickets)
 #summary stats and bar chart of fine amount
 summary(tickets$Violation)
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation))
-
   #Violations broken down by year
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge")
-  #No partial years
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge")
 
 #Because the distribution of fine amount has several high-end outliers, we should be using the median as our measure of central tendency. This is even more clear when comparing the difference between the mean and median (112.7 and 85). 
