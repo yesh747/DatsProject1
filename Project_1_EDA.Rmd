@@ -262,37 +262,6 @@ ggplot(data = tickets) + geom_point(mapping = (aes(x = tickets$Fine.Amount, y = 
 ggplot(data = tickets) + geom_point(mapping = aes(x = tickets$Amount.Paid, y=tickets$Fine.Amount,color = tickets$Fine.Level)) + xlab("Amount Paid") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Amount Paid") + labs(color="Fine Level")
 ```
 
-```{r EDA of Money and Violation variables, tidy=T, message=F}
-#Amount paid
-table(tickets$Amount.Paid)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Amount.Paid))
-  #Why are some amounts paid so low? Are these cases where status is open still? 
-tickets_by_paid_status <- tickets %>% group_by(Amount.Paid, Citation.Status) 
-summary(tickets_by_paid_status)
-ggplot(data = tickets_by_paid_status) + geom_bar(mapping = aes(x = tickets$Amount.Paid, fill = tickets$Citation.Status))
-  #Most of these ones are still open but it still doesn't make sense
-  #What types of violations are these????
-tickets_paid_viol <- tickets %>% group_by(Amount.Paid, Violation)
-ggplot(data = tickets_paid_viol) + geom_bar(mapping = aes(x = tickets$Amount.Paid, fill = tickets$Violation))
-  #Looks like prices of violations vary. By time? Weekend? 
-
-#Amount Due
-table(tickets$Amount.Due)
-ggplot(data = tickets) + geom_histogram(mapping = aes(x = tickets$Amount.Due, fill = tickets$Violation))
-  ##The vast majority of tickets are fully paid off
-head(table(tickets$Amount.Due)) 
-  ##By citations status?
-tickets_due_status <- tickets %>% group_by(Amount.Due, Citation.Status)
-summary(tickets_due_status)
-ggplot(data = tickets_due_status) + geom_histogram(mapping = aes(x = tickets$Amount.Due, fill = tickets$Citation.Status))
-  #That seems to tell the whole story
-
-#Paid on time
-table(tickets$Paid.On.Time)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = as.factor(tickets$Paid.On.Time)))
-
-```
-
 ```{r EDA of Time variables, tidy=T, message=F}
 # Month
 table(tickets$Citation.Issue.Month)
@@ -335,15 +304,7 @@ tickets_day_rev <- tickets %>% group_by(Violation, Citation.Issue.DayOfWeek) %>%
 
 ##How have the prices of TOLE violations changed over time?
 ```{r prices change over time EDA, tidy=T, message=F}
-#summary stats and bar chart of fine amount
-summary(tickets$Violation)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation))
-  #Violations broken down by year
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge")
-
 #Because the distribution of fine amount has several high-end outliers, we should be using the median as our measure of central tendency. This is even more clear when comparing the difference between the mean and median (112.7 and 85). 
-median(tickets$Fine.Amount)
-mean(tickets$Fine.Amount)
 median(tickets$Fine.Amount)
 mean(tickets$Fine.Amount)
 
@@ -352,8 +313,6 @@ fine_by_viol <- tickets %>%
   group_by(Violation) %>% 
   summarise(median = median(Fine.Amount))
 fine_by_viol
-
-#Maybe put these results in a table?
 
 # find the median fine amount by year
 fine_by_year <- tickets %>%
@@ -373,9 +332,6 @@ ggplot(data = tickets_day_rev) + geom_col(mapping = aes(x = tickets_day_rev$Cita
 ##Are more citations issued on certain days of the week? Are more tickets issued on weekdays than weekends?
 
 #Jack EDA
-
-```
-
 
 ```{r Cost Change of Each Violation Type over Hour, Day, Month, and Year}
 # These graphs show how Fine Amount changes over each hour, day of the week, month, and year for each Violation Type
