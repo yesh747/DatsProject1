@@ -215,6 +215,7 @@ ggplot(data = tickets) + geom_point(mapping = (aes(x = tickets$Fine.Amount, y = 
 
 
 
+
 ```{r EDA of Money and Violation variables, tidy=T, message=F}
 
 
