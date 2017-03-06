@@ -71,10 +71,6 @@ According to Michael Rhodes, San Francisco's transit-only lane violations are ge
 
 [^3]: Michael Rhodes, "Violations in SF’s Transit-Only Lanes Rampant and Rarely Enforced," StreetsBlogSF, August 11, 2009, <http://sf.streetsblog.org/2009/08/11/violations-in-sfs-transit-only-lanes-rampant-and-rarely-enforced/>
 
-```{r citation2}
-print("Cite the above sources properly")
-```
-  
 ## Broad Questions
 
 The TOLE program was implemented in 2008 as a pilot set to expire in 2012, unless extended upon an evaluation in 2011. In 2011, the City of San Francisco decided to vote to implement the TOLE program permanently. Therefore, understanding the effects and dimensions of the program are vital to constantly improving it. We believed in an exploratory analysis that looking at revenue generation would be in ideal means of understanding this program. Revenue optimization both increases funding for the state and creates economic incentive for drivers' to avoid citations. Under properly placed incentives and fine structures, revenue optimization can lead to ideal traffic outcomes.
