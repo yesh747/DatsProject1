@@ -280,6 +280,20 @@ ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Hour)
 
 ##How have the prices of TOLE violations changed over time?
 ```{r prices change over time EDA, tidy=T, message=F}
+
+#Calculate the Median Daily Revenue By Violation
+tickets_day_rev <- tickets %>% group_by(Violation, Citation.Issue.DayOfWeek) %>% summarise(Median.Daily.Revenue = median(Amount.Paid)*n())
+tickets_day_rev
+  ##Median Daily Revenue by Violation
+ggplot(data = tickets_day_rev) + geom_col(mapping = aes(x = tickets_day_rev$Citation.Issue.DayOfWeek, y= Median.Daily.Revenue), fill="Salmon", color="black") + xlab("Citation Day of Week") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Median Daily Revenue by Violation") + ylab("Median Daily Revenue") + facet_wrap(~Violation) 
+
+##Median Daily Revenue 
+tickets_day_rev2 <- tickets %>% group_by(Citation.Issue.DayOfWeek) %>% summarise(Median.Daily.Revenue = median(Amount.Paid)*n())
+  ##Plot Median Daily Revenue
+ggplot(data = tickets_day_rev2) + geom_col(mapping = aes(x = tickets_day_rev2$Citation.Issue.DayOfWeek, y= Median.Daily.Revenue), fill="Salmon", color="black") + xlab("Citation Day of Week") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Median Daily Revenue") + ylab("Median Daily Revenue") + scale_y_continuous(label=comma)
+
+
+
 #median fine amount by violation
 fine_by_viol <- tickets %>% 
   group_by(Violation) %>% 

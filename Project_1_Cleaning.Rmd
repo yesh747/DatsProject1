@@ -211,6 +211,9 @@ str(tickets)
 After cleaning the dataset to begin exploratory data anlysis, there are `r NROW(tickets)` observations and `r NCOL(tickets)` variables.
 
 ```{r, results='hide', tidy=T}
+#Reorder factors
+tickets$Citation.Issue.DayOfWeek = factor(tickets$Citation.Issue.DayOfWeek,levels(tickets$Citation.Issue.DayOfWeek)[c(4,2,6,7,5,1,3)])
+
 #Save cleaned dataset as tickets.csv
 write.csv(tickets, file = "tickets.csv", row.names = FALSE)
 ```
