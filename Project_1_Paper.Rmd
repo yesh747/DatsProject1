@@ -103,14 +103,13 @@ We first examined basic summary statistics involving our dataset. Our cleaned da
 
 We then examined if violations vary by year, and saw that `PRK PROHIB` and `PK PHB OTD` occur only in after 2013, while `TWAWY ZN#1` and `TWAWY ZONE` violations were issued only until 2013. 
 
-```{r EDA1, echo=FALSE}
+```{r EDA1, echo=FALSE, fig.height=3}
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge") + coord_flip() + xlab("Violation") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Number of Tickets by Violation and Year of Citation") + labs(fill = "Citation Issue Year") 
 ```
 
-\newpage
 We decided to examine how fine amount varies within each fine and discovered a bimodal distribution with a "high" and "low" fine.
 
-```{r EDA2, echo=FALSE, message=FALSE, tidy=TRUE}
+```{r EDA2, echo=FALSE, message=FALSE, tidy=TRUE, fig.height=3}
 fine.plot <- ggplot(data = tickets) + geom_histogram(mapping = aes(x = tickets$Fine.Amount), fill="salmon")
 
 fine.plot + facet_wrap(~tickets$Violation) + xlab("Fine Amount") + theme(plot.title = element_text(hjust = 0.5)) + 
@@ -198,6 +197,19 @@ ggplot(data = tickets_day_rev) + geom_col(mapping = aes(x = tickets_day_rev$Cita
 ```
 
 From the "Distribution of Median Daily Revenue," we see that Tuesday appears to generate more revenue than the median daily revenue However, Friday and Saturday appear to have significantly less than median daily revenue. When broken down by violation type in "Distribution of Median Daily Revenue by Violation", Tuesday's high overall value is not able to be visually attributed to any single violation. However, Friday and Saturday can be attributed to below median revenue daily revenue in generation in all violations except `DBL PARK` and `BUS ZONE`, which both seem consistent across all days. Also, `TWAWY ZN#1` has a notably higher than median revenue generation on Monday.
+
+We then decided to calculate the variance of the median daily revenue for citations from the average median daily revenue from citations.
+
+```{r Analysis1}
+
+head(tickets_day_rev)
+head(tickets_day_rev2)
+
+meanDailyMedianRevenue <- mean(tickets_day_rev2$Median.Daily.Revenue)
+summary(tickets_day_rev2$Median.Daily.Revenue)
+```
+
+The mean daily median revenue is `r round(meanDailyMedianRevenue)` USD. The variance of the daily median revenue is `r var(tickets_day_rev2$Median.Daily.Revenue)` and the standard deviation is `r round(sqrt(var(tickets_day_rev2$Median.Daily.Revenue)))`. This high standard deviation is due to the low median daily revenues of Friday and Saturday. 
 
 
 
