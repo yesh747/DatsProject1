@@ -11,14 +11,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ----------------------------------------------------------------------
 
-```{r setup, include=FALSE}
+```{r Manage Packages, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+#Libraries
 library(ggmap)
-library(ggplot2)
 library(dplyr)
 library(tidyverse)
 library(tidyr)
-# date format library
+library(scales)
 library(lubridate)
 ```
 
@@ -34,25 +34,18 @@ tickets <- data.frame(read.csv("tickets.csv", header=T, sep=','))
 ```{r Most common violations, tidy=T, message=FALSE, echo=FALSE}
 table(tickets$Violation)
 #Plot violations by count 
-ggplot(data=tickets, aes(Violation)) + geom_bar()
+ggplot(data=tickets) + geom_bar(mapping = (aes(Violation)), fill = "blue", color = "black") 
 ```
 
 ##What TOLE violations produce the most revenue?
 ```{r violations most revenue, tidy=T, message=FALSE, echo=FALSE}
+#tickets by viol and summed by amount paid
 tickets_by_viol <- tickets %>% group_by(Violation) %>% summarise(Total.Revenue = sum(Amount.Paid))
-ggplot(tickets_by_viol, aes(x=Violation, y=Total.Revenue)) + geom_col()
-
-
-
-#Create Total Revenue variable for each violation
-tickets.violation <- aggregate(tickets[,c("Amount.Paid")], by=list(tickets$Violation), FUN=sum)
-tickets.violation <- rename(tickets.violation, Violation = Group.1, Total.Revenue = x)
-#Plot Revenue by violation
-ggplot(tickets.violation, aes(x=Violation, y=Total.Revenue)) + geom_bar(stat="identity")  + coord_flip() +  geom_text(aes(label=Total.Revenue))
+ggplot(tickets_by_viol) + geom_col(mapping = aes(x=Violation, y=Total.Revenue), fill = "blue", color = "black") + scale_y_continuous(labels = comma)
   ##Graph for total revenue of violations looks pretty similar to graph of violation counts above
 
-#Remove total revenue variable
-rm(tickets.violation)
+#Remove dataframe
+rm(tickets_by_viol)
 ```
 
 ###What TOLE Violations produce the most revenue on weekends and weekdays?
@@ -419,6 +412,6 @@ Violation.Off <- NonRushHour %>% group_by(Violation) %>% summarise(Total_During_
 Violation.Off
 
 a <- Violation.Rush$Total_During_Rush / (Violation.Rush$Total_During_Rush + Violation.Off$Total_During_Off)
-a <- round(a, 3)
+#a <- round(a, 3)
 
 ```
