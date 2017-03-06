@@ -189,6 +189,73 @@ ggplot(data = tickets) + geom_bar(mapping = aes(x = as.factor(tickets$Citation.I
 
 It looks like they introduced "High" level fines in 2014 as it is the only year in the dataset that a "High" fine level occurs.
 
+##Median Fine Amount
+
+###Median Fine Amount by Violation 
+```{r Median Fine by Violation, tidy=T, message=F}
+#median fine amount by violation
+fine_by_viol <- tickets %>% 
+  group_by(Violation) %>% 
+  summarise(median = median(Fine.Amount))
+  ##Plot
+ggplot(data = fine_by_viol) + geom_col(mapping = aes(x = Violation, y=median), fill = "salmon", color="black") + xlab("Violation") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Median Fine Amount by Violation") + ylab('Median Fine Amount')
+
+#Remove form workspace
+rm(fine_by_viol)
+```
+
+###Median Fine Amount by Year
+```{r Median fine by year, tidy=T,message=F}
+#median fine amount by year
+fine_by_year <- tickets %>%
+  group_by(Citation.Issue.Year) %>% 
+  summarise(median = median(Fine.Amount))
+ ##Plot
+ggplot(data = fine_by_year,mapping = aes(x = Citation.Issue.Year, y=median)) + geom_point() + xlab("Citation Year") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Median Fine Amount by Citation Year") + ylab('Median Fine Amount') + geom_line()
+
+#Remove from workspace
+rm(fine_by_year)
+```
+
+We need to check if these nominal increases in median citation amount are merely increasing with inflation or if they are increasing above the rate of inflation.
+
+###Median Fine Amount by Year and Violation
+```{r Median fine by year and viol, tidy=T, message=F}
+#median fine amount by year, violation
+fine_by_year_viol <- tickets %>% 
+  group_by(Violation,Citation.Issue.Year) %>% 
+  summarise(median = median(Fine.Amount))
+##Plot
+ggplot(data = fine_by_level_viol,mapping = aes(x = Violation, y=median, fill=Fine.Level), position="dodge") + geom_col() + xlab("Citation Year") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Median Fine Amount by Citation Year") + ylab('Median Fine Amount') 
+
+#remove from workspace
+rm(fine_by_level_viol)
+```
+
+
+
+
+```{r Median Fine Amount, tidy=T, message=F}
+
+
+
+
+
+
+
+
+
+
+#plot fine by year and violation to see change and trends
+fine.plot.yv <- ggplot(data = fine_by_year_viol, aes(x = Citation.Issue.Year, y = median))
+fine.plot.yv <- fine.plot.yv + geom_line() + geom_point() 
+fine.plot.yv <- fine.plot.yv + facet_wrap(~ Violation)
+fine.plot.yv
+
+rm(fine_by_year, fine_by_viol, fine.plot.year, fine.plot.yv)
+```
+
+
 #Citation Status
 ```{r Citation status, tidy=T, message=F}
 #Citation Status
@@ -227,7 +294,7 @@ ggplot(data = tickets) + geom_histogram(mapping = aes(x = tickets$Amount.Paid), 
 ##Amount Paid vs Fine Amount
 ```{r Amount paid vs fine amount, tidy=T, message=F}
 #Scatterplot of amount paid and fine amount
-ggplot(data = tickets) + geom_point(mapping = aes(x = tickets$Amount.Paid, y=tickets$Fine.Amount, color = tickets$Fine.Level)) + xlab("Amount Paid") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Amount Paid") + labs(color="Fine Level")
+ggplot(data = tickets) + geom_point(mapping = aes(x = tickets$Amount.Paid, y=tickets$Fine.Amount,color = tickets$Fine.Level)) + xlab("Amount Paid") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Amount Paid") + labs(color="Fine Level")
 
 #Correlation
 cor(tickets$Fine.Amount,tickets$Amount.Paid)
@@ -278,64 +345,32 @@ ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Hour)
 # People are getting boned during rush hour on the way home
 ```
 
+#Median Daily Revenue 
+```{r Median Daily Revenue, tidy=T, message=F}
+#Calculateand plot the Median Daily Revenue
+tickets_day_rev2 <- tickets %>% group_by(Citation.Issue.DayOfWeek) %>% summarise(Median.Daily.Revenue = median(Amount.Paid)*n())
+
+ggplot(data = tickets_day_rev2) + geom_col(mapping = aes(x = tickets_day_rev2$Citation.Issue.DayOfWeek, y= Median.Daily.Revenue), fill="Salmon", color="black") + xlab("Citation Day of Week") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Median Daily Revenue") + ylab("Median Daily Revenue")+ scale_y_continuous(label=comma) + geom_hline(yintercept = median(tickets_day_rev2$Median.Daily.Revenue))
+
+# find median daily revenue by violation type
+tickets_viol_median_rev <- tickets %>% group_by(Violation) %>% summarise(Median.Violation.Revenue = median(Amount.Paid)*n()/7)
+
+#Calculate and plot the Median Daily Revenue by Violation type
+tickets_day_rev <- tickets %>% group_by(Violation, Citation.Issue.DayOfWeek) %>% summarise(Median.Daily.Revenue = median(Amount.Paid)*n())
+
+ggplot(data = tickets_day_rev) + geom_col(mapping = aes(x = tickets_day_rev$Citation.Issue.DayOfWeek, y= Median.Daily.Revenue), fill="Salmon", color="black") + xlab("Citation Day of Week") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Median Daily Revenue by Violation") + ylab("Median Daily Revenue") + facet_wrap(~Violation) + scale_y_continuous(label=comma)  + geom_hline(data=tickets_viol_median_rev, aes(yintercept = tickets_viol_median_rev$Median.Violation.Revenue))
+```
+
+
 ##How have the prices of TOLE violations changed over time?
 ```{r prices change over time EDA, tidy=T, message=F}
 
-#Calculate the Median Daily Revenue By Violation
-tickets_day_rev <- tickets %>% group_by(Violation, Citation.Issue.DayOfWeek) %>% summarise(Median.Daily.Revenue = median(Amount.Paid)*n())
-tickets_day_rev
-  ##Median Daily Revenue by Violation
-ggplot(data = tickets_day_rev) + geom_col(mapping = aes(x = tickets_day_rev$Citation.Issue.DayOfWeek, y= Median.Daily.Revenue), fill="Salmon", color="black") + xlab("Citation Day of Week") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Median Daily Revenue by Violation") + ylab("Median Daily Revenue") + facet_wrap(~Violation) 
-
-##Median Daily Revenue 
-tickets_day_rev2 <- tickets %>% group_by(Citation.Issue.DayOfWeek) %>% summarise(Median.Daily.Revenue = median(Amount.Paid)*n())
-  ##Plot Median Daily Revenue
-ggplot(data = tickets_day_rev2) + geom_col(mapping = aes(x = tickets_day_rev2$Citation.Issue.DayOfWeek, y= Median.Daily.Revenue), fill="Salmon", color="black") + xlab("Citation Day of Week") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Median Daily Revenue") + ylab("Median Daily Revenue") + scale_y_continuous(label=comma)
-
-
-
-#median fine amount by violation
-fine_by_viol <- tickets %>% 
-  group_by(Violation) %>% 
-  summarise(median = median(Fine.Amount))
-fine_by_viol
-  ##Maybe put these results in a table? 
-
-#median fine amount by year
-fine_by_year <- tickets %>%
-  group_by(Citation.Issue.Year) %>% 
-  summarise(median = median(Fine.Amount))
-head(fine_by_year)
-
-#Maybe add fine level as control to this*************
-
-#plot median fine amount by year to see trend in prices over time
-fine.plot.year <- ggplot(data = fine_by_year, aes(x = Citation.Issue.Year, y = median))
-fine.plot.year <- fine.plot.year + geom_line() + geom_point() 
-fine.plot.year
-# *******Median fine amount per year seems to have increased significantly over time. Index with inflation to see if this is really the case?*******
-
-#fine amount by year, violation
-fine_by_year_viol <- tickets %>% 
-  group_by(Violation,Citation.Issue.Year) %>% 
-  summarise(median = median(Fine.Amount))
-head(fine_by_year_viol)
-
-#plot fine by year and violation to see change and trends
-fine.plot.yv <- ggplot(data = fine_by_year_viol, aes(x = Citation.Issue.Year, y = median))
-fine.plot.yv <- fine.plot.yv + geom_line() + geom_point() 
-fine.plot.yv <- fine.plot.yv + facet_wrap(~ Violation)
-fine.plot.yv
-
-# ********** Looks like we should look at violations and the years they occur in and maybe get more specific on type of violation*********
-
-
-rm(fine_by_year, fine_by_viol, fine.plot.year, fine.plot.yv)
-```
 
 ##Are more citations issued on certain days of the week? Are more tickets issued on weekdays than weekends?
 
 #Jack EDA
+
+```
 
 
 ```{r Cost Change of Each Violation Type over Hour, Day, Month, and Year}
