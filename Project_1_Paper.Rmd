@@ -146,7 +146,9 @@ ggplot(tickets, aes(x = Citation.Issue.Hour, fill = Violation)) + geom_bar(posit
 This graph shows that Double Parking (`DBL PARK`) and Bus Zone (`BUS ZONE`) Violations compromise most non-rush hour violations, while Towaway Zone (`TWAWY ZN#1` and `TWAWY ZONE`) and Downtown Towaway Zone (`PRK PROHIB`) Violations make up most of rush hour violations.
 
 
+
 We further investigated which violations produce the most revenue. On a daily basis, Towaway Zone 1 produces the most revenue. even when broken down by weekdays and weekends.
+
 
 
 
@@ -197,7 +199,6 @@ tickets_day_rev <- tickets %>% group_by(Violation, Citation.Issue.DayOfWeek) %>%
 
 ggplot(data = tickets_day_rev) + geom_col(mapping = aes(x = tickets_day_rev$Citation.Issue.DayOfWeek, y= Median.Daily.Revenue), fill="Salmon", color="black") + xlab("Citation Day of Week") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Median Daily Revenue by Violation") + ylab("Median Daily Revenue") + facet_wrap(~Violation) + scale_y_continuous(label=comma)  + geom_hline(data=tickets_viol_median_rev, aes(yintercept = tickets_viol_median_rev$Median.Violation.Revenue))
 ```
-
 
 
 From the graph of "Distribution of Median Daily Revenue," we see that Tuesday appears to generate more revenue than the median daily revenue. However, Friday and Saturday appear to generate significantly less than median daily revenue. When broken down by violation type in "Distribution of Median Daily Revenue by Violation", Tuesday's high overall value is not able to be visually attributed to any single violation. However, Friday and Saturday can be attributed to below median revenue daily revenue in generation in all violations except `DBL PARK` and `BUS ZONE`, which both seem consistent across all days. Also, `TWAWY ZN#1` has a notably higher than median revenue generation on Monday.
