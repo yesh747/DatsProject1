@@ -190,7 +190,7 @@ ggplot(data = tickets_day_rev) + geom_col(mapping = aes(x = tickets_day_rev$Cita
 
 ```
 
-From the "Distribution of Median Daily Revenue," we see that Tuesday appears to generate more revenue than the median daily revenue However, Friday and Saturday appear to have significantly less than median daily revenue. When broken down by violation type in "Distribution of Median Daily Revenue by Violation", Tuesday's high overall value is not able to be visually attributed to any single violation. However, Friday and Saturday can be attributed to below median revenue daily revenue in generation in all violations except `DBL PARK` and `BUS ZONE`, which both seem consistent across all days. Also, `TWAWY ZN#1` has a notably higher than median revenue generation on Monday.
+From the graph of "Distribution of Median Daily Revenue," we see that Tuesday appears to generate more revenue than the median daily revenue. However, Friday and Saturday appear to generate significantly less than median daily revenue. When broken down by violation type in "Distribution of Median Daily Revenue by Violation", Tuesday's high overall value is not able to be visually attributed to any single violation. However, Friday and Saturday can be attributed to below median revenue daily revenue in generation in all violations except `DBL PARK` and `BUS ZONE`, which both seem consistent across all days. Also, `TWAWY ZN#1` has a notably higher than median revenue generation on Monday.
 
 We then decided to calculate the variance of the median daily revenue for citations from the average median daily revenue from citations.
 
