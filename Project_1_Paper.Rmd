@@ -63,7 +63,7 @@ Some observations were missing key data. We decided to drop all observations wit
 
 Overall, we dropped `r 191 + 78 + 84 + 21` of the original 17,178 observations in the dataset. This only accounts for `r round(((191 + 78 + 84 + 21)/17178)*100,2)` percent of the dataset. Thus, we are confident that we did not introduce any inherent biases to the data by dropping the aforementioned observations. 
 
-## Background Prior External Analysis Related to Content of Dataset
+## Literature Review
 
 Most of the the analyses found in the literature compared TOLE data to traffic flow rates. According to SFMTA, certain corridors experienced reductions in delays after TOLE implemention. Westbound Geary Street corridor saw a 3% daily and 7% afternoon reduction in delays. Westbound Stutter Street saw a 15% daily and 20% afternoon reduction in delays. However, this analysis lacks significant meaning because it cherry picks certain areas and also lacks a control comparison for other areas that may not have been in the TOLE program. Additionally, their analysis has some clear flaws as they state that of the 1700 different vehicles that recieved a citation from March to August of 2012, only 2% recieved a citation during the "same three-month period in 2013." Again this analysis lacks a control comparison and suffers a clear inconsistancy as March to August is a six-month period---not three month as SFMTA stated.[^2]
 
