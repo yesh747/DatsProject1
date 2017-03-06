@@ -6,6 +6,10 @@ output: pdf_document
 ---
 
 ```{r loadData, include =FALSE}
+knitr::opts_chunk$set(fig.pos = 'H')
+
+library(ggplot2)
+library(dplyr)
 
 rawTickets <- data.frame(read.csv('Muni_Driver_Reported_Transit_Only_Lane_Violations.csv', header = T, sep = ","))
 tickets <- read.csv("tickets.csv")
@@ -40,10 +44,10 @@ The unit of observation was an individual citation for a transit-only lane viola
 * `Location` -- The street address where the traffic only lane violation citation was issued
 * `Violation.Code` -- A code that corresponds to the type of traffic only lane violation that was committed to warrant issuing a citation
 * `Violations` -- Description of the traffic only lane violation issued in the citation
-* `Fine.Amount` -- The dollar amount of to be paid for the traffic only lane violation
+* `Fine.Amount` -- The dollar amount of to be paid for the traffic only lane violation. Mean: `r round(mean(tickets$Fine.Amount),2)` USD.
 * `Citation.Status` -- Status of the citation (Open, Closed, Unapplied)
-* `Amount.Paid` -- The dollar amount paid for the traffic only lane violation
-* `Amount.Due` -- Outstanding balance for the traffic only lane violation 
+* `Amount.Paid` -- The dollar amount paid for the traffic only lane violation. Mean: `r round(mean(tickets$Amount.Paid),2)` USD.
+* `Amount.Due` -- Outstanding balance for the traffic only lane violation. Mean: `r round(mean(tickets$Amount.Due),2)` USD.
 * `Suspend.Code` -- Code that represents reason for license suspension (Suspended until the driver goes to driving school, pays fine, too many points on license, etc.)
 * `Suspend.Process.Date` -- Date the license suspension goes into effect
 * `Suspend.Until.Date` -- Date the license suspension is over
@@ -51,12 +55,11 @@ The unit of observation was an individual citation for a transit-only lane viola
 * `Last.Edited.Date` -- Date that represents the last date the corresponding observation was edited; This column was completely blank when downloaded
 * `Geom` -- The latitude and longitude (latitude, longitude) of the traffic only lane violation 
 
-
 ## Limitations of Dataset and Data Cleaning
 
 The limitations of the data include the timing of the implementation of the video camera citation system. While SFMTA claims 100% of their buses are equipped with cameras, they fail to indicate if the 100% implementation was at the start or end of the program. We believe there was a trial period at the beginning, so we decided to drop variables in 2008 when the program first started because there were only 154 citations issued that year, but typically several thousand citations issued in the following years. In addition our dataset lacked demographic controls for the regions where citations were issued. This means demographic factors could cause unobserved biases in our data. Similarly to the domestic controls, the dataset lacks observations of citations issued before the program was put in place, which prevents a before and after analysis. While out of the scope of this initial analysis, future analysis can map to the `Geom` variable in the dataset to census tracts to derive demographic information and could be used to compare to other citations.
 
-Some observations were missing key data. We decided to drop all observations with no `Geom` data, so that future geospatial and demographic analysis could be done (12 observations). We dropped all observations where `Citation.Status` was not specified or "unapplied", as we determined "unapplied" was out of the scope of this project (84 observations). We dropped `Violations` where the listed violation was determined to be "No Violation" (1 observation) or occurred less than or equal to 70 times (77 observations). We also dropped citations in the year 2015 to avoid biases in monthly and yearly analysis because only 2 months were included for 2015.
+Some observations were missing key data. We decided to drop all observations with no `Geom` data, so that future geospatial and demographic analysis could be done (12 observations). We dropped all observations where `Citation.Status` was not specified or "unapplied", as we determined "unapplied" was out of the scope of this project (84 observations). We dropped `Violations` where the listed violation was determined to be "No Violation" (1 observation) or occurred less than or equal to 70 times (77 observations) because the other violations occured well over 1000 time each. We also dropped citations in the year 2015 to avoid biases in monthly and yearly analysis because only 2 months were included for 2015.
 
 Overall, we dropped `r 191 + 78 + 84 + 21` of the original 17,178 observations in the dataset. This only accounts for `r round(((191 + 78 + 84 + 21)/17178)*100,2)` percent of the dataset. Thus, we are confident that we did not introduce any inherent biases to the data by dropping the aforementioned observations. 
 
@@ -88,16 +91,95 @@ Source: http://www.leginfo.ca.gov/pub/11-12/bill/asm/ab_1001-1050/ab_1041_cfa_20
 print("Cite the above sources properly")
 ```
 
-
-  * Research on program from "Description_of_TOLE_Program.pdf"
-  * Introduce 3 "Broad Questions"
-
+\newpage
 ## EDA & SMART Question
-  * Show EDA
-  * Show refinement into SMART Questions
+
+We first examined basic summary statistics involving our dataset. Our cleaned dataset had `r dim(tickets)[1]` observations (i.e. citations) and `r dim(tickets)[2]` variables. There were 5 violation:
+ * 'BUS ZONE' -- Parking in Bus Zone  -- `r table(tickets$Violation)["BUS ZONE"]` citations
+ * 'DBL Park' -- Double Parking -- `r table(tickets$Violation)["DBL PARK"]` citations
+ * 'PK PHB OTD' -- Tow-Away Zone - Outside Downtown Core  -- `r table(tickets$Violation)["PK PHB OTD"]` citations
+ * 'PRK PROHIB' -- Tow-Away Zone - Downtown Core  -- `r table(tickets$Violation)["PRK PROHIB"]` citations
+ * 'TWAWY ZN#1' -- Towaway Zone 1 and Towaway Zone  -- `r table(tickets$Violation)["TWAWY ZN#1"]` citations
+ * 'TWAWY ZONE' -- Towaway Zone  -- `r table(tickets$Violation)["TWAWY ZONE"]` citations
+
+We then examined if violations vary by year, and saw that `PRK PROHIB` and `PK PHB OTD` occur only in after 2013, while `TWAWY ZN#1` and `TWAWY ZONE` violations were issued only until 2013. 
+
+```{r EDA1, echo=FALSE}
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge") + coord_flip() + xlab("Violation") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Number of Tickets by Violation and Year of Citation") + labs(fill = "Citation Issue Year") 
+```
+
+\newpage
+We decided to examine how fine amount varies within each fine and discovered a bimodal distribution with a "high" and "low" fine.
+
+```{r EDA2, echo=FALSE, message=FALSE, tidy=TRUE}
+fine.plot <- ggplot(data = tickets) + geom_histogram(mapping = aes(x = tickets$Fine.Amount), fill="salmon")
+
+fine.plot + facet_wrap(~tickets$Violation) + xlab("Fine Amount") + theme(plot.title = element_text(hjust = 0.5)) + 
+    ggtitle("Histogram of Fine Amount by Violation")
+
+rm(fine.plot)
+```
+
+\newpage
+However, upon further examination, we saw there was no obvious difference in `Fine.Amount` when controlling for other factors like time of day:
+
+```{r EDA3, echo=FALSE, message=FALSE, tidy=TRUE}
+# Initialize new factor variable Fine.Level
+tickets$Fine.Level <- tickets$Fine.Amount
+tickets$Fine.Level <- ifelse(tickets$Fine.Amount < 175, "Low", "High")
+tickets$Fine.Level <- as.factor(tickets$Fine.Level)
+tickets$Fine.Level <- relevel(tickets$Fine.Level, "Low")
+## Generate table
+
+fine.plot3 <- ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Hour), 
+    fill = "salmon")
+fine.plot3 + facet_wrap(~tickets$Fine.Level) + xlab("Fine Level") + theme(plot.title = element_text(hjust = 0.5)) + 
+    ggtitle("Bar Chart of Fine Level by Hour of Citation")
+
+rm(fine.plot3)
+```
+
+\newpage
+We then began to shift our analysis towards looking at the interaction between time and revenue generated by fines. We looked at the distribution of different citations over time in a stacked bar plot:
+
+
+```{r EDA4, echo=FALSE, message=FALSE}
+
+ggplot(tickets, aes(x = Citation.Issue.Hour, fill = Violation)) + geom_bar(position = "fill") + 
+    scale_x_continuous(breaks = seq(0, 24, 1)) + xlab("Hour of Citation") + 
+    theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Stacked Bar Chart of Violations by Citation Issue Hour ")
+
+```
+
+This graph shows that Double Parking (`DBL PARK`) and Bus Zone (`BUS ZONE`) Violations comprimise most non-rush hour violations, while Tomaway Zone (`TWAWY ZN#1` and `TWAWY ZONE`) and Downtown Towaway Zone (`PRK PROHIB`) Violations make up most of rush hour violations.
+
+\newpage
+We then investigated which violations produce the most revenue. On a daily basis, Towaway Zone 1 produces the most revenue. even when broken down to weekdays and weekends.
+
+```{r EDA5, echo=FALSE}
+#Create variable that stores sum of apount paid by violation and weekday 
+tickets.violWeekday <- aggregate(tickets[,c("Amount.Paid")], by=list(tickets$Violation, tickets$Citation.Issue.Weekday), FUN=sum)
+  ##Rename the columns of tickets.violWeekday
+tickets.violWeekday <- rename(tickets.violWeekday, Violation = Group.1, Weekday = Group.2, Total.Revenue = x)
+  ##Create new column for daily average revenue: IF day == weekday, then divide TR by 5; ELSE divide by 2
+tickets.violWeekday$Daily.Average.Revenue <- ifelse(tickets.violWeekday$Weekday == 1, tickets.violWeekday$Total.Revenue/5, tickets.violWeekday$Total.Revenue/2)
+
+#Average Weekday and Weekend Revenue by Violation
+p <- ggplot(tickets.violWeekday, aes(x=Violation, y=Daily.Average.Revenue, fill=Weekday))
+p + geom_col() + coord_flip() + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Total Average Weekday and Weekend Revenue by Violation") + ylab("Daily Average Revenue")
+
+#Remove from Workspace
+rm(p, tickets.violWeekday)
+```
+
+We saw that there was a potential for certain days of the week to generate more revenue than others so we decided to focus on how revenue can vary based on each day of the week. Understanding the deviation of median revenue for weekday from the median daily revenue is an ideal starting point for further analysis. If deviation is present, then future work could examine variation based on violation type, time of day, rush hour vs non-rush hour. Additionally, using median is justified to account for the biasing effect of the uneven bimodal distribution of fine amounts (the high and low fines) and outher outliers. Ideally, if the dataset could be connected to traffic flow/congestion rate data, then this analysis could be examined to better understand the impact of this program on actual traffic flows. Therefore, we have settled on the SMART question:
+
+_**In the TOLE program, which days of the week earn significantly more or less median daily revenue than the overall median daily revenue?**_
+
 
 ## Answering the SMART Question
-  * 
+  * Bar graph, weekday (x-axis) vs median daily fine amount (y-axis) with fill on Violation Type
+  * Bar graph for each fine type
 
 # NOTES:
   * 
