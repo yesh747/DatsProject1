@@ -2,7 +2,8 @@
 title: "Analysis of the San Fransico TOLE Program"
 author: "Michael Arango, Yeshwant Chillakuru, Jackson Crum"
 date: "March 6, 2017"
-output: pdf_document
+output:
+  pdf_document: default
 ---
 
 ```{r loadData, include =FALSE}
@@ -20,13 +21,8 @@ The Transit-Only Lane Enforcement (TOLE) is run by the San Fransico Municipal Tr
 
 Under the TOLE program, all public buses are equipped with video cameras to capture the license plates of vehicles parked or stopped in a dedicated transit-lane. The vehicle's registered owner will then recieve the ciation in the mail in aims to deter future transit-only lane violations. These citations and their details form the dataset we are examining.\footnote{Data retrieved from Data.gov (\url{https://catalog.data.gov/dataset/muni-driver-reported-transit-only-lane-violations})} 
 
-San Fransico currently operates 26 miles transit-only lanes with 160,000 daily passsengers and planned future expansion of 22 miles, so the TOLE program has strong potential for long-term impact by increasing the efficiency of the municipal transity system and potentially increasing municipal revenue temporarily as drivers adjust to the enforcement scheme.
+San Fransico currently operates 26 miles transit-only lanes with 160,000 daily passsengers and planned future expansion of 22 miles, so the TOLE program has strong potential for long-term impact by increasing the efficiency of the municipal transity system and potentially increasing municipal revenue temporarily as drivers adjust to the enforcement scheme.\footnote{San Francisco Municipal Transportation Agency, "Transit Only Lane Enforcement," SFMTA, accessed on February 24, 2017, \url{https://www.sfmta.com/sites/default/files/projects/2015/TOLE%20one%20pager_v3.pdf}} 
 
-Source: https://www.sfmta.com/sites/default/files/projects/2015/TOLE%20one%20pager_v3.pdf
-
-```{r citation1}
-print("Cite the above source properly")
-```
 
 ## Background on dataset
 
