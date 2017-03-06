@@ -103,7 +103,7 @@ We first examined basic summary statistics involving our dataset. Our cleaned da
 We then examined if violations vary by year, and saw that `PRK PROHIB` and `PK PHB OTD` occur only in after 2013, while `TWAWY ZN#1` and `TWAWY ZONE` violations were issued only until 2013. 
 
 ```{r EDA1, echo=FALSE}
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge") + coord_flip() + xlab("Violation") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Number of Tickets by Violation and Year of Citation") + labs(fill = "Citation Issue Year") 
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge", color="black") + coord_flip() + xlab("Violation") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Number of Tickets by Violation and Year of Citation") + labs(fill = "Citation Issue Year") 
 ```
 
 \newpage
@@ -130,7 +130,7 @@ tickets$Fine.Level <- relevel(tickets$Fine.Level, "Low")
 ## Generate table
 
 fine.plot3 <- ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Hour), 
-    fill = "salmon")
+    fill = "salmon", color="black")
 fine.plot3 + facet_wrap(~tickets$Fine.Level) + xlab("Fine Level") + theme(plot.title = element_text(hjust = 0.5)) + 
     ggtitle("Bar Chart of Fine Level by Hour of Citation")
 
