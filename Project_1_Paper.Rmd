@@ -7,8 +7,6 @@ output:
 ---
 
 ```{r loadData, include =FALSE}
-knitr::opts_chunk$set(fig.pos = 'H')
-
 library(ggplot2)
 library(dplyr)
 library(scales)
@@ -206,19 +204,16 @@ We then decided to calculate the variance of the median daily revenue for citati
 
 ```{r Analysis1, include=FALSE}
 
-head(tickets_day_rev)
-head(tickets_day_rev2)
-
-meanDailyMedianRevenue <- mean(tickets_day_rev2$Median.Daily.Revenue)
+meanDailyMedianRevenue <- round(mean(tickets_day_rev2$Median.Daily.Revenue))
+str(meanDailyMedianRevenue)
 summary(tickets_day_rev2$Median.Daily.Revenue)
 
 st <- shapiro.test(tickets_day_rev$Median.Daily.Revenue)
 st$p.value
 
-rm(st, meanDailyMedianRevenue)
 ```
 
-The mean daily median revenue is `r round(mean(tickets_day_rev2$Median.Daily.Revenue))` USD. The variance of the daily median revenue is `r var(tickets_day_rev2$Median.Daily.Revenue)` and the standard deviation is `r round(sqrt(var(tickets_day_rev2$Median.Daily.Revenue)))`. This high standard deviation is due to the low median daily revenues of Friday and Saturday. We considered using the t-test to determine which days of the week are significantly different from the mean, but because of a low sample size and the lack of a normal distribution (Reject the null hypothesis that the sample comes from a population with a normal distribution based on Shapiro Test of Normalcy where p = `r shapiro.test(tickets_day_rev$Median.Daily.Revenue)$p.value`), conducting a t-test would not have significant meaning.
+The mean daily median revenue1 is `r as.character(meanDailyMedianRevenue)`. The variance of the daily median revenue is `r as.character(var(tickets_day_rev2$Median.Daily.Revenue))` and the standard deviation is `r as.character(round(sqrt(var(tickets_day_rev2$Median.Daily.Revenue))))`. This high standard deviation is due to the low median daily revenues of Friday and Saturday. We considered using the t-test to determine which days of the week are significantly different from the mean, but because of a low sample size and the lack of a normal distribution (reject the null hypothesis that the sample comes from a population with a normal distribution based on Shapiro Test of Normalcy where p = `r as.character(round(st$p.value),5)`), conducting a t-test would not have significant meaning.
 
 We decided to do a Chi-squared test in order to determine whether the violation type is independent of the day of the week. The following is the contignency table:
 
@@ -227,7 +222,9 @@ chi <- chisq.test(tickets$Violation, tickets$Citation.Issue.DayOfWeek)
 chi[c('observed', 'expected')]
 ```
 
-The Chi-squared test with `r chi$parameter` degrees of freedom resulted in an X-squared statistic of `r chi$statistic` and a p-value of `r chi$p.value`. This means that the violation types are independent of the days of the week.
+The Chi-squared test with `r chi$parameter` degrees of freedom resulted in an X-squared statistic of `r round(chi$statistic,3)` and a p-value of `r round(chi$p.value,10)`. This means that the violation types are independent of the days of the week. 
+
+# Conclusion
 
 
 # TO-DO: 
