@@ -115,8 +115,6 @@ ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as
 ```
 
 
-# Mike EDA 
-
 #How does Fine Amount vary?
 
 ```{r Fine Amount, tidy=T, message=F}
@@ -173,7 +171,6 @@ ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Weekd
 ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.DayOfWeek), fill = "salmon") + facet_wrap(~ tickets$Fine.Level) + xlab("Fine Level") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Fine Level by Day of the Week")
 ```
 
-
 ###Fine Level by Month
 ```{r Fine level by month, tidy=T, message=F}
 #Plot fine level by month 
@@ -188,13 +185,38 @@ ggplot(data = tickets) + geom_bar(mapping = aes(x = as.factor(tickets$Citation.I
 
 It looks like they introduced "High" level fines in 2014 as it is the only year in the dataset that a "High" fine level occurs.
 
+#Citation Status
+```{r Citation status, tidy=T, message=F}
+#Citation Status
+table(tickets$Citation.Status)
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Status), fill = "salmon") + xlab("Citation Status") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Citation Status")  
+  ##Most are closed. Which ones are still open though?
+```
+
+##Citation status by year
+```{r Status by year, tidy=T, message=F}
+ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Status), fill = "salmon") + xlab("Citation Status") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Bar Chart of Citation Status by Year") + facet_wrap(~ as.factor(tickets$Citation.Issue.Year))
+  ##Not make sense to look at fine level or others like that
+```
+
+##Citation Status by Amount Due
+```{r Status by Amount Due, tidy=T, message=F}
+ggplot(data = tickets) + geom_point(mapping = (aes(x = tickets$Citation.Status, y = tickets$Amount.Due)), alpha= 1/50) + xlab("Citation Status") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Dot plot of Citation Status by Amount Due")
+```
+
+```{r Status by Amount due 2, tidy=T, message=F}
+ggplot(data = tickets) + geom_boxplot(aes(x = tickets$Citation.Status, y = tickets$Amount.Due)) + xlab("Citation Status") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Dotplot of Citation Status by Amount Due")
+```
+
+###Checking Fine amount vs Amount Due by Citation Status
+```{r Amount vs due, tidy =T, message=F}
+ggplot(data = tickets) + geom_point(mapping = (aes(x = tickets$Fine.Amount, y = tickets$Amount.Due, color = tickets$Citation.Status))) + xlab("Fine Amount") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Dot plot of Fine Amount vs Amount Due by Citation Status") + ylab("Amount Due")
+```
 
 
 
 ```{r EDA of Money and Violation variables, tidy=T, message=F}
-#Citation Status
-table(tickets$Citation.Status)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Status))
+
 
 #Amount paid
 table(tickets$Amount.Paid)
