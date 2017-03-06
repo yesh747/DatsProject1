@@ -329,9 +329,6 @@ fine.plot.year
 ggplot(data = tickets_day_rev) + geom_col(mapping = aes(x = tickets_day_rev$Citation.Issue.DayOfWeek, y= Median.Daily.Revenue), fill="Salmon", color="black") + xlab("Citation Day of Week") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Distribution of Median Daily Revenue by Violation") + ylab("Median Daily Revenue") + facet_wrap(~Violation) + scale_y_continuous(label=comma)  + geom_hline(data=tickets_viol_median_rev, aes(yintercept = tickets_viol_median_rev$Median.Violation.Revenue))
 ```
 
-##Are more citations issued on certain days of the week? Are more tickets issued on weekdays than weekends?
-
-#Jack EDA
 
 ```{r Cost Change of Each Violation Type over Hour, Day, Month, and Year}
 # These graphs show how Fine Amount changes over each hour, day of the week, month, and year for each Violation Type
