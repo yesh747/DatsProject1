@@ -117,11 +117,14 @@ ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as
 ```
 
 #How does Fine Amount vary?
-
 ```{r Fine Amount, tidy=T, message=F}
 table(tickets$Fine.Amount)
 fine.plot <- ggplot(data = tickets) + geom_histogram(mapping = aes(x = tickets$Fine.Amount), fill = "salmon", color="black")
 fine.plot + xlab("Fine Amount") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Histogram of Fine Amount") 
+#Because the distribution of fine amount has several high-end outliers, we should be using the median as our measure of central tendency. This is even more clear when comparing the difference between the mean and median (112.7 and 85). 
+median(tickets$Fine.Amount)
+mean(tickets$Fine.Amount)
+
   ##By Violation
 fine.plot + facet_wrap(~ tickets$Violation) + xlab("Fine Amount") + theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Histogram of Fine Amount by Violation")
   ## It is clear that tickets have a low fine amount and high fine amount. Is it time of day,      weekday vs weekend, year, etc.? Let's make a factor variable to check this
@@ -277,29 +280,20 @@ ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Citation.Issue.Hour)
 
 ##How have the prices of TOLE violations changed over time?
 ```{r prices change over time EDA, tidy=T, message=F}
-#summary stats and bar chart of fine amount
-summary(tickets$Violation)
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation))
-  #Violations broken down by year
-ggplot(data = tickets) + geom_bar(mapping = aes(x = tickets$Violation, fill = as.factor(tickets$Citation.Issue.Year)), position = "dodge")
-
-#Because the distribution of fine amount has several high-end outliers, we should be using the median as our measure of central tendency. This is even more clear when comparing the difference between the mean and median (112.7 and 85). 
-median(tickets$Fine.Amount)
-mean(tickets$Fine.Amount)
-
-# find the median fine amount by violation
+#median fine amount by violation
 fine_by_viol <- tickets %>% 
   group_by(Violation) %>% 
   summarise(median = median(Fine.Amount))
 fine_by_viol
+  ##Maybe put these results in a table? 
 
-#Maybe put these results in a table?
-
-# find the median fine amount by year
+#median fine amount by year
 fine_by_year <- tickets %>%
   group_by(Citation.Issue.Year) %>% 
   summarise(median = median(Fine.Amount))
 head(fine_by_year)
+
+#Maybe add fine level as control to this*************
 
 #plot median fine amount by year to see trend in prices over time
 fine.plot.year <- ggplot(data = fine_by_year, aes(x = Citation.Issue.Year, y = median))
@@ -321,6 +315,8 @@ fine.plot.yv
 
 # ********** Looks like we should look at violations and the years they occur in and maybe get more specific on type of violation*********
 
+
+rm(fine_by_year, fine_by_viol, fine.plot.year, fine.plot.yv)
 ```
 
 ##Are more citations issued on certain days of the week? Are more tickets issued on weekdays than weekends?
