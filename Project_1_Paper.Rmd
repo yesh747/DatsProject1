@@ -12,9 +12,13 @@ knitr::opts_chunk$set(fig.pos = 'H')
 library(ggplot2)
 library(dplyr)
 library(scales)
+library(MASS)
 
 rawTickets <- data.frame(read.csv('Muni_Driver_Reported_Transit_Only_Lane_Violations.csv', header = T, sep = ","))
 tickets <- read.csv("tickets.csv")
+
+tickets$Citation.Issue.DayOfWeek = factor(tickets$Citation.Issue.DayOfWeek,levels(tickets$Citation.Issue.DayOfWeek)[c(4,2,6,7,5,1,3)])
+
 
 ```
 
@@ -59,7 +63,7 @@ The unit of observation was an individual citation for a transit-only lane viola
 
 The limitations of the data include the timing of the implementation of the video camera citation system. While SFMTA claims 100% of their buses are equipped with cameras, they fail to indicate if the 100% implemention was at the start or end of the program. We believe there was a trial period at the beginning, so we decided to drop variables in 2008 when the program first started because there were only 154 citations issued that year, but typically several thousand citations issued in the following years. In addition our dataset lacked demographic controls for the regions where citations were issued. This means demographic factors could cause unobserved biases in our data. Similarly to the domestic controls, the dataset lacks observations of citations issued before the program was put in place, which prevents a before and after analysis. While out of the scope of this initial analysis, future analysis can map to the `Geom` variable in the dataset to census tracts to derive demographic information and could be used to compare to other citations.
 
-Some observations were missing key data. We decided to drop all observations with no `Geom` data, so that future geospatial and demographic analysis could be done (12 observations). We dropped all observations where `Citation.Status` was not specificied or "unapplied", as we determined "unapplied" was out of the scope of this project (84 observations). We dropped `Violations` where the listed violation was determined to be "No Violation" (1 observation) or occured less than or equal to 70 times (77 observations). We also dropped citations in the year 2015 to avoid biases in monthly and yearly analysis because only 2 months were included for 2015.
+Some observations were missing key data. We decided to drop all observations with no `Geom` data, so that future geospatial and demographic analysis could be done (21 observations). We dropped all observations where `Citation.Status` was not specificied or "unapplied", as we determined "unapplied" was out of the scope of this project (84 observations). We dropped `Violations` where the listed violation was determined to be "No Violation" (1 observation) or occured less than or equal to 70 times (77 observations). We also dropped citations in the year 2015 to avoid biases in monthly and yearly analysis because only 2 months were included for 2015.
 
 Overall, we dropped `r 191 + 78 + 84 + 21` of the original 17,178 observations in the dataset. This only accounts for `r round(((191 + 78 + 84 + 21)/17178)*100,2)` percent of the dataset. Thus, we are confident that we did not introduce any inherent biases to the data by dropping the aforementioned observations. 
 
@@ -200,27 +204,31 @@ From the "Distribution of Median Daily Revenue," we see that Tuesday appears to 
 
 We then decided to calculate the variance of the median daily revenue for citations from the average median daily revenue from citations.
 
-```{r Analysis1}
+```{r Analysis1, include=FALSE}
 
 head(tickets_day_rev)
 head(tickets_day_rev2)
 
 meanDailyMedianRevenue <- mean(tickets_day_rev2$Median.Daily.Revenue)
 summary(tickets_day_rev2$Median.Daily.Revenue)
+
+st <- shapiro.test(tickets_day_rev$Median.Daily.Revenue)
+st$p.value
+
+rm(st, meanDailyMedianRevenue)
 ```
 
-The mean daily median revenue is `r round(meanDailyMedianRevenue)` USD. The variance of the daily median revenue is `r var(tickets_day_rev2$Median.Daily.Revenue)` and the standard deviation is `r round(sqrt(var(tickets_day_rev2$Median.Daily.Revenue)))`. This high standard deviation is due to the low median daily revenues of Friday and Saturday. 
+The mean daily median revenue is `r round(mean(tickets_day_rev2$Median.Daily.Revenue))` USD. The variance of the daily median revenue is `r var(tickets_day_rev2$Median.Daily.Revenue)` and the standard deviation is `r round(sqrt(var(tickets_day_rev2$Median.Daily.Revenue)))`. This high standard deviation is due to the low median daily revenues of Friday and Saturday. We considered using the t-test to determine which days of the week are significantly different from the mean, but because of a low sample size and the lack of a normal distribution (Reject the null hypothesis that the sample comes from a population with a normal distribution based on Shapiro Test of Normalcy where p = `r shapiro.test(tickets_day_rev$Median.Daily.Revenue)$p.value`), conducting a t-test would not have significant meaning.
 
+We decided to do a Chi-squared test in order to determine whether the violation type is independent of the day of the week. The following is the contignency table:
 
+```{r Analysis2, echo=FALSE}
+chi <- chisq.test(tickets$Violation, tickets$Citation.Issue.DayOfWeek)
+chi[c('observed', 'expected')]
+```
 
-* Variance calculation
-* Chi Square 
+The Chi-squared test with `r chi$parameter` degrees of freedom resulted in an X-squared statistic of `r chi$statistic` and a p-value of `r chi$p.value`. This means that the violation types are independent of the days of the week.
 
-# NOTES:
-  * 
 
 # TO-DO: 
-  * CITATIONS!!!!!!!!!!!!!!!!!!!!
-  * add summary stats/dimensions to the background of the dataset
-  * Variance calcuation
-  * Bill introduced in 2007, reevaluated in 2011, made permanent in 2015
+  * reword SMART Question

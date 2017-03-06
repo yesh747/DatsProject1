@@ -26,6 +26,9 @@ library(lubridate)
 ```{r Read in the file, tidy=T, results = 'hide'}
 getwd()
 tickets <- data.frame(read.csv("tickets.csv", header=T, sep=','))
+
+tickets$Citation.Issue.DayOfWeek = factor(tickets$Citation.Issue.DayOfWeek,levels(tickets$Citation.Issue.DayOfWeek)[c(4,2,6,7,5,1,3)])
+
 ```
 
 #Violations
